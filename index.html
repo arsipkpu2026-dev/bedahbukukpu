@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Layanan Sertifikat KPU Kabupaten Labuhanbatu Utara</title>
+  
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
+  
+  <style>
+    html, body { height: 100dvh; width: 100vw; overflow: hidden; touch-action: manipulation; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+    .view-section { display: none; }
+    .view-section.active { display: flex; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    #canvas-container { position: relative; border: 2px dashed #cbd5e1; display: block; width: 100%; text-align: center; cursor: crosshair; overflow: hidden; background-color: #f1f5f9; min-height: 250px; }
+    canvas { max-width: 100%; height: auto; display: inline-block; margin: 0 auto; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.6); border-radius: 10px; }
+    #pdf-loading { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; font-weight: bold; color: #3b82f6; }
+    .spinner { border: 4px solid rgba(59, 130, 246, 0.3); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3b82f6; animation: spin 1s linear infinite; margin-bottom: 8px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body class="font-sans h-[100dvh] w-screen overflow-hidden flex flex-col select-none relative bg-slate-900 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[3px] z-0"></div>
+
+  <!-- CONTAINER UTAMA -->
+  <div class="relative z-10 flex flex-col h-full w-full">
+    
+    <!-- HEADER -->
+    <header class="bg-white/90 backdrop-blur-md shadow-sm border-b border-white/20 flex-none">
+      <div class="w-full max-w-[98%] lg:max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-3 md:gap-4 cursor-pointer hover:opacity-80 transition" onclick="navTo('home')">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/KPU_Logo.svg" alt="Logo KPU" class="w-9 h-9 md:w-11 md:h-11 object-contain drop-shadow-sm">
+          <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-orange-600 tracking-tight drop-shadow-sm">KPU Kabupaten Labura</h1>
+        </div>
+        
+        <!-- BANTUAN & ADMIN NAV -->
+        <div class="flex items-center gap-2">
+          <!-- Tombol Hubungi Admin (Gabungan) -->
+          <button onclick="klikHubungiAdmin()" class="text-[10px] md:text-xs font-bold bg-slate-800 text-white px-4 py-2 rounded-xl shadow-md hover:bg-slate-700 active:scale-95 transition flex items-center gap-1.5" title="Pusat Bantuan">
+             🎧 <span>Hubungi Admin</span>
+          </button>
+          
+          <!-- Tombol Admin -->
+          <button id="btn-login-nav" class="text-[10px] md:text-xs font-bold bg-white/50 text-slate-700 px-4 py-2 rounded-xl border border-slate-200/50 shadow-sm hover:bg-slate-50 active:scale-95 transition ml-1 md:ml-2">🛠️</button>
+          <button id="btn-logout-nav" onclick="logoutAdmin()" class="hidden text-[10px] md:text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-xl border border-red-200 shadow-sm hover:bg-red-100 active:scale-95 transition">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- KONTEN TENGAH -->
+    <main class="flex-grow w-full px-4 py-6 overflow-y-auto custom-scroll flex flex-col pb-24 md:pb-12">
+      
+      <!-- VIEW: HOME -->
+      <div id="view-home" class="view-section active flex-col justify-center my-auto py-2 w-full">
+        <div class="text-center mb-6 md:mb-10 bg-white/80 backdrop-blur-xl p-6 md:p-10 rounded-[2rem] shadow-2xl border border-white/50 max-w-md md:max-w-4xl mx-auto w-full">
+          <h2 class="text-2xl sm:text-3xl md:text-5xl font-extrabold text-slate-800 tracking-tight drop-shadow-sm">Layanan Mandiri</h2>
+          <p class="text-xs sm:text-sm md:text-lg text-slate-600 mt-2 font-semibold">Kelola kehadiran dan akses sertifikat serta informasi kegiatan KPU Kabupaten Labuhanbatu Utara</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6 w-full max-w-md md:max-w-5xl xl:max-w-7xl mx-auto">
+          
+          <div onclick="navToAgenda()" class="group relative bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-blue-400/50">
+            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📅</div>
+            <div class="relative z-10 flex flex-col gap-3">
+              <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">📅</div>
+              <div><h3 class="text-lg font-black tracking-wide">Agenda Meeting</h3><p class="text-blue-100 text-[11px] mt-1 font-medium">Jadwal, ID, password, background.</p></div>
+            </div>
+          </div>
+
+          <div id="menu-hadir-card" onclick="validasiAksesFormLokal('hadir')" class="group relative bg-gradient-to-br from-orange-500 to-amber-600 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-orange-400/50 relative">
+            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📝</div>
+            <div class="relative z-10 flex flex-col gap-3">
+              <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">📝</div>
+              <div><h3 class="text-lg font-black tracking-wide">Isi Daftar Hadir</h3><p class="text-orange-50 text-[11px] mt-1 font-medium">Registrasi kehadiran kegiatan.</p></div>
+            </div>
+          </div>
+
+          <div onclick="openDownloadView(1)" class="group relative bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-emerald-500/50">
+            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📜</div>
+            <div class="relative z-10 flex flex-col gap-3">
+              <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">📜</div>
+              <div><h3 class="text-lg font-black tracking-wide">Sertifikat Bedah Buku I</h3><p class="text-emerald-50 text-[11px] mt-1 font-medium">Cari dan unduh.</p></div>
+            </div>
+          </div>
+
+          <!-- Modifikasi Tooltip (title) di Menu Sertifikat Bedah Buku II -->
+          <div id="menu-buku2-card" onclick="validasiAksesFormLokal('buku2')" title="Sertifikat elektronik kegiatan Bedah Buku II sedang dalam tahap pemrosesan dan validasi. Dokumen baru dapat diakses dan diunduh melalui sistem paling cepat H+1 setelah kegiatan selesai dilaksanakan." class="group relative bg-gradient-to-br from-cyan-600 to-blue-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-cyan-500/50 relative">
+            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📘</div>
+            <div class="relative z-10 flex flex-col gap-3">
+              <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">📘</div>
+              <div><h3 class="text-lg font-black tracking-wide">Sertifikat Bedah Buku II</h3><p class="text-cyan-50 text-[11px] mt-1 font-medium">Cari dan unduh.</p></div>
+            </div>
+          </div>
+
+          <div onclick="navToEbook()" class="group relative bg-gradient-to-br from-purple-600 to-fuchsia-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-purple-400/50">
+            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📚</div>
+            <div class="relative z-10 flex flex-col gap-3">
+              <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">📚</div>
+              <div><h3 class="text-lg font-black tracking-wide">Materi & E-Book</h3><p class="text-purple-100 text-[11px] mt-1 font-medium">Unduh materi dan dokumentasi.</p></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW: AGENDA USER -->
+      <div id="view-agenda" class="view-section flex-col bg-white/95 backdrop-blur-xl p-6 lg:p-10 rounded-[2rem] shadow-2xl border border-white/60 my-auto max-w-2xl lg:max-w-4xl mx-auto w-full">
+        <button onclick="navTo('home')" class="text-xs md:text-sm font-bold text-slate-500 mb-5 hover:text-slate-800 w-fit bg-slate-100 px-4 py-2 rounded-xl">← Kembali</button>
+        <h2 class="text-2xl lg:text-4xl font-extrabold text-slate-800 mb-2">Agenda Meeting</h2>
+        <p class="text-xs lg:text-sm text-slate-500 mb-6">Jadwal pertemuan virtual.</p>
+        <div id="list-agenda-user" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+      </div>
+
+      <!-- VIEW: EBOOK USER -->
+      <div id="view-ebook" class="view-section flex-col bg-white/95 backdrop-blur-xl p-6 lg:p-10 rounded-[2rem] shadow-2xl border border-white/60 my-auto max-w-2xl lg:max-w-4xl mx-auto w-full">
+        <button onclick="navTo('home')" class="text-xs md:text-sm font-bold text-slate-500 mb-5 hover:text-slate-800 w-fit bg-slate-100 px-4 py-2 rounded-xl">← Kembali</button>
+        <h2 class="text-2xl lg:text-4xl font-extrabold text-slate-800 mb-2">Materi & E-Book</h2>
+        <p class="text-xs lg:text-sm text-slate-500 mb-6">Silahkan unduh.</p>
+        <div id="list-ebook-user" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <!-- VIEW: DAFTAR HADIR -->
+      <div id="view-hadir" class="view-section flex-col bg-white/95 backdrop-blur-xl p-6 lg:p-10 rounded-[2rem] shadow-2xl border border-white/60 my-auto max-w-md lg:max-w-2xl mx-auto w-full">
+        <button onclick="navTo('home')" class="text-xs md:text-sm font-bold text-slate-500 mb-5 hover:text-slate-800 w-fit bg-slate-100 px-4 py-2 rounded-xl">← Kembali</button>
+        <h2 class="text-2xl lg:text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">Form Daftar Hadir</h2>
+        
+        <div id="info-waktu-hadir" class="mb-5 hidden text-xs lg:text-sm font-medium text-amber-800 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm leading-relaxed"></div>
+
+        <form id="form-hadir" onsubmit="submitHadirTeks(event)" class="flex flex-col gap-4">
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap (Boleh Pakai Gelar)</label><input type="text" id="h-nama" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Instansi / Satker / Organisasi / Lainnya</label><input type="text" id="h-instansi" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Email Aktif (Pastikan Email Anda Benar dan Penyimpanannya tidak penuh).</label><input type="email" id="h-email" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nomor HP</label>
+            <input type="tel" pattern="[0-9]*" id="h-hp" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm" placeholder="Misal: 08123456789">
+          </div>
+          
+          <div class="mt-1 flex items-start gap-3 bg-orange-50 p-4 rounded-xl border border-orange-200">
+            <input type="checkbox" id="h-auto-email" class="w-5 h-5 mt-0.5 text-orange-600 rounded">
+            <label for="h-auto-email" class="text-xs text-slate-700 font-bold">Kirim ke email saya otomatis bila sertifikat tersedia.</label>
+          </div>
+          <button type="submit" class="w-full mt-2 bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black py-4 rounded-xl hover:from-orange-700 hover:to-amber-600 shadow-xl text-sm transition active:scale-95">Kirim Data Kehadiran</button>
+        </form>
+      </div>
+
+      <!-- VIEW: DOWNLOAD SERTIFIKAT -->
+      <div id="view-download" class="view-section flex-col bg-white/95 backdrop-blur-xl p-6 lg:p-10 rounded-[2rem] shadow-2xl border border-white/60 my-auto max-w-md lg:max-w-2xl mx-auto w-full">
+        <button onclick="navTo('home')" class="text-xs md:text-sm font-bold text-slate-500 mb-5 hover:text-slate-800 w-fit bg-slate-100 px-4 py-2 rounded-xl">← Kembali</button>
+        <h2 id="download-title" class="text-2xl lg:text-4xl font-extrabold text-slate-800 mb-6 tracking-tight">Cari Sertifikat</h2>
+        <form id="form-download" onsubmit="submitDownload(event)" class="flex flex-col gap-4">
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap (Sesuai daftar hadir)</label><input type="text" id="d-nama" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-emerald-500 font-medium"></div>
+          <div>
+            <div class="flex justify-between items-end mb-1">
+               <label class="block text-xs font-bold text-slate-600">Email Aktif</label>
+               <button type="button" onclick="cariEmailLupa()" class="text-[10px] text-blue-600 font-extrabold hover:underline active:scale-95 transition">🔍 Lupa Email?</button>
+            </div>
+            <input type="email" id="d-email" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-emerald-500 font-medium">
+          </div>
+          <button type="submit" class="w-full mt-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black py-4 rounded-xl shadow-xl text-sm transition active:scale-95">Cari & Unduh</button>
+        </form>
+      </div>
+
+      <!-- VIEW: ADMIN LOGIN -->
+      <div id="view-login" class="view-section flex-col bg-white/95 backdrop-blur-xl p-8 lg:p-14 rounded-[2rem] shadow-2xl border border-white/60 my-auto max-w-sm mx-auto w-full">
+        <div class="flex justify-center mb-5"><div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-3xl shadow-inner border border-slate-200">🔐</div></div>
+        <h2 class="text-2xl font-extrabold text-slate-800 mb-6 text-center">🛠️</h2>
+        <form id="form-login" onsubmit="submitLogin(event)" class="flex flex-col gap-4">
+          <input type="text" id="l-user" required placeholder="Username" class="w-full bg-white border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-slate-800 text-center font-bold">
+          <input type="password" id="l-pass" required placeholder="Password" class="w-full bg-white border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-slate-800 text-center font-bold">
+          <button type="submit" class="w-full mt-2 bg-slate-800 text-white font-black py-4 rounded-xl shadow-xl text-sm transition active:scale-95">Masuk</button>
+        </form>
+      </div>
+
+      <!-- VIEW: ADMIN DASHBOARD -->
+      <div id="view-admin" class="view-section flex-col bg-white/95 backdrop-blur-xl p-4 md:p-8 lg:p-10 rounded-[2rem] shadow-2xl border border-white/60 my-auto w-full max-w-[100%] mx-auto">
+        <button onclick="navTo('home')" class="text-xs lg:text-sm text-blue-700 font-bold mb-6 hover:bg-blue-100 bg-blue-50 px-4 py-2 rounded-xl w-fit border border-blue-100 transition active:scale-95">← Kembali</button>
+        <h2 class="text-2xl lg:text-4xl font-extrabold text-slate-800 mb-6 tracking-tight border-b pb-4">Dashboard Administrator</h2>
+        
+        <div class="flex flex-col gap-6 w-full">
+          
+          <!-- Konfigurasi Template -->
+          <div class="w-full bg-white p-5 lg:p-8 rounded-[1.5rem] border border-slate-200 shadow-sm flex flex-col">
+            <h3 class="text-base lg:text-xl font-extrabold text-slate-800 mb-4 border-b pb-2">1. Konfigurasi Template</h3>
+            <div class="mb-4 flex flex-col md:flex-row gap-3">
+              <input type="file" id="template-upload" accept="image/png, image/jpeg, application/pdf" class="w-full border p-2 rounded-xl text-xs bg-slate-50 cursor-pointer flex-grow" onchange="loadTemplate(event)">
+              <button onclick="muatKonfigurasiTerakhir()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl border border-blue-200 text-xs font-bold hover:bg-blue-100 transition whitespace-nowrap active:scale-95">Muat Template Tersimpan</button>
+            </div>
+            
+            <div class="mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
+              <select id="el-select" class="w-full border p-2.5 rounded-xl text-sm font-bold" onchange="changeCanvasElement()">
+                <option value="nama">Nama Peserta</option><option value="nomor">Nomor Sertifikat</option>
+              </select>
+              <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 mt-3 items-end">
+                <div><label class="block text-[10px] font-bold mb-1">X (Mendatar)</label><input type="number" id="coord-x" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()"></div>
+                <div><label class="block text-[10px] font-bold mb-1">Y (Menurun)</label><input type="number" id="coord-y" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()"></div>
+                <div><label class="block text-[10px] font-bold mb-1">Size</label><input type="number" id="font-size" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()"></div>
+                <div>
+                  <label class="block text-[10px] font-bold mb-1">Font</label>
+                  <select id="font-family" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()">
+                    <option value="Arial">Arial</option>
+                    <option value="Pacifico">Pacifico</option>
+                    <option value="Poppins">Poppins</option>
+                    <option value="Times">Times</option>
+                    <option value="Courier">Courier New</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold mb-1">Style</label>
+                  <select id="font-weight" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()">
+                    <option value="bold">Bold</option>
+                    <option value="normal">Normal</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold mb-1">Align</label>
+                  <select id="font-align" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()">
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div id="canvas-container" class="mb-3 rounded-xl border shadow-inner flex justify-center relative w-full overflow-auto" style="min-height: 400px;">
+                <div id="pdf-loading">Memuat Template...</div>
+                <canvas id="cert-canvas"></canvas>
+            </div>
+            <p class="text-[11px] font-mono bg-slate-800 text-green-400 p-3 rounded-xl border border-slate-700 shadow-inner" id="coord-info">Koordinat: X=0, Y=0</p>
+            <button onclick="saveSetTemplate()" class="w-full bg-indigo-600 text-white font-bold py-3 mt-3 rounded-xl text-sm transition active:scale-95 shadow-md hover:bg-indigo-700">💾 Simpan Desain & Titik Koordinat ke Server</button>
+          </div>
+
+          <!-- Data Peserta & Action -->
+          <div class="w-full bg-white p-5 lg:p-8 rounded-[1.5rem] border border-slate-200 shadow-sm flex flex-col">
+            <h3 class="text-base lg:text-xl font-extrabold text-slate-800 mb-4 border-b pb-2 flex justify-between items-center">
+              2. Data Peserta
+              <button onclick="loadDataPeserta()" class="text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm font-bold transition active:scale-95">🔄 Refresh</button>
+            </h3>
+            
+            <input type="text" id="search-peserta" placeholder="🔍 Cari Nama atau Email..." onkeyup="filterPeserta()" class="w-full border border-slate-300 p-3 mb-3 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 font-medium">
+
+            <div class="overflow-x-auto border rounded-xl flex-grow max-h-[500px] custom-scroll">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 sticky top-0 border-b z-10">
+                  <tr>
+                    <th class="p-3 w-8"><input type="checkbox" id="check-all" class="rounded" onchange="toggleCheckAll()"></th>
+                    <th class="p-3 w-10 text-center font-bold">No.</th>
+                    <th class="p-3 font-bold">Data (Nama, Email & No HP)</th>
+                  </tr>
+                </thead>
+                <tbody id="table-peserta" class="divide-y"><tr><td colspan="3" class="p-6 text-center text-slate-400">Memuat data...</td></tr></tbody>
+              </table>
+            </div>
+            
+            <div class="mt-4 flex flex-col gap-2">
+              <button onclick="generateMassal()" class="w-full bg-slate-800 text-white font-black py-3 rounded-xl text-sm transition active:scale-95 shadow-md">1. Buat PDF (Untuk Yang Dicentang)</button>
+              <button onclick="triggerKirimEmail()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-[11px] lg:text-xs transition active:scale-95 shadow-md mt-2">📧 Kirim Email (Massal / Centang)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- AGENDA & EBOOK -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+          <div class="bg-white p-5 lg:p-6 rounded-[1.5rem] border border-slate-200 shadow-sm">
+            <h3 class="text-base font-extrabold text-slate-800 mb-4 border-b pb-2">3. Manajemen Agenda</h3>
+            <form id="form-agenda" onsubmit="submitAgendaAdmin(event)" class="grid grid-cols-2 gap-3 mb-4">
+              <input type="text" id="a-judul" required placeholder="Judul Rapat" class="col-span-2 border p-2 rounded-xl text-xs bg-slate-50">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">Waktu Mulai</label><input type="datetime-local" id="a-waktu" required class="w-full border p-2 rounded-xl text-xs bg-slate-50"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">Waktu Selesai</label><input type="datetime-local" id="a-waktu-selesai" required class="w-full border p-2 rounded-xl text-xs bg-slate-50"></div>
+              <select id="a-platform" class="border p-2 rounded-xl text-xs bg-slate-50"><option>Zoom Meeting</option><option>Google Meet</option><option>Offline</option></select>
+              <input type="text" id="a-link" placeholder="Tautan Rapat (Opsional)" class="col-span-2 border p-2 rounded-xl text-xs bg-slate-50">
+              <input type="text" id="a-id" placeholder="Meeting ID (Opsional)" class="border p-2 rounded-xl text-xs bg-slate-50">
+              <input type="text" id="a-pass" placeholder="Passcode (Opsional)" class="border p-2 rounded-xl text-xs bg-slate-50">
+              <input type="text" id="a-bg" placeholder="Tautan Background Zoom (Opsional)" class="col-span-2 border p-2 rounded-xl text-xs bg-slate-50">
+              <button type="submit" class="col-span-2 bg-blue-600 text-white font-bold py-2 rounded-xl text-xs transition active:scale-95">➕ Tambah Agenda</button>
+            </form>
+            <div class="overflow-auto border rounded-xl max-h-40"><table class="w-full text-xs text-left"><tbody id="table-agenda-admin" class="divide-y"></tbody></table></div>
+          </div>
+
+          <div class="bg-white p-5 lg:p-6 rounded-[1.5rem] border border-slate-200 shadow-sm">
+            <h3 class="text-base font-extrabold text-slate-800 mb-4 border-b pb-2">4. Manajemen E-Book / Materi</h3>
+            <form id="form-ebook" onsubmit="submitEbookAdmin(event)" class="grid grid-cols-1 gap-3 mb-4">
+              <input type="text" id="e-judul" required placeholder="Judul Materi / E-Book" class="border p-2 rounded-xl text-xs bg-slate-50">
+              <input type="text" id="e-desc" placeholder="Deskripsi Singkat" class="border p-2 rounded-xl text-xs bg-slate-50">
+              <input type="text" id="e-link" required placeholder="Link URL Download (Drive/Dll)" class="border p-2 rounded-xl text-xs bg-slate-50">
+              <button type="submit" class="bg-purple-600 text-white font-bold py-2 rounded-xl text-xs transition active:scale-95">➕ Tambah E-Book</button>
+            </form>
+            <div class="overflow-auto border rounded-xl max-h-40"><table class="w-full text-xs text-left"><tbody id="table-ebook-admin" class="divide-y"></tbody></table></div>
+          </div>
+        </div>
+        
+        <!-- PENGATURAN UMUM & KEAMANAN -->
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Pengaturan Umum (Sertifikat & Email Laporan) -->
+            <div class="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-sm flex flex-col justify-between">
+               <div>
+                   <h4 class="text-xs font-extrabold text-slate-800 uppercase border-b pb-2 mb-3 border-slate-200">⚙️ Pengaturan Umum (Sertifikat)</h4>
+                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label class="block text-[10px] font-bold text-slate-600">Nomor Sertifikat</label>
+                        <select id="s-tipe-nomor" class="w-full border border-slate-200 p-2 rounded-lg text-xs bg-slate-50" onchange="toggleKodeInput()"><option value="otomatis">Urut Otomatis</option><option value="manual">Manual Kolom Sheet</option></select>
+                      </div>
+                      <div id="kode-container" class="sm:col-span-2"><label class="block text-[10px] font-bold text-slate-600">Format Kode Otomatis</label><input type="text" id="s-kode" placeholder="/HM.07-Kt/1223/2/2026" class="w-full border border-slate-200 p-2 rounded-lg text-xs font-mono bg-slate-50"></div>
+                      <div class="sm:col-span-3"><label class="block text-[10px] font-bold text-slate-600">Email Admin (Penerima Laporan Sukses TTE)</label><input type="email" id="a-email" placeholder="arsipkpu2026@gmail.com" class="w-full border border-slate-200 p-2 rounded-lg text-xs bg-slate-50"></div>
+                   </div>
+               </div>
+               <button onclick="saveSetUmum()" class="mt-4 w-full bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs transition active:scale-95 shadow-sm hover:bg-slate-700">Simpan Pengaturan Umum</button>
+            </div>
+
+            <!-- Ganti Password -->
+            <div class="bg-slate-50 p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between">
+               <div>
+                 <h3 class="text-xs font-extrabold text-slate-800 uppercase border-b pb-2 mb-3 border-slate-200">🔐 Ganti Sandi Admin</h3>
+                 <div class="flex flex-col gap-3 mt-4">
+                   <input type="password" id="p-old" placeholder="Password Lama" class="w-full border p-2.5 rounded-lg text-xs">
+                   <input type="password" id="p-new" placeholder="Password Baru" class="w-full border p-2.5 rounded-lg text-xs">
+                 </div>
+               </div>
+               <button onclick="changePassword()" class="w-full bg-red-600 text-white font-bold py-3.5 mt-4 rounded-xl text-sm transition active:scale-95 hover:bg-red-700 shadow-md">Simpan Sandi Baru</button>
+            </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900/90 backdrop-blur text-white text-center py-4 flex-none border-t border-white/10 mt-auto">
+      <p class="text-[13px] md:text-sm font-semibold tracking-wide">&copy; <span id="year"></span> KPU Kabupaten Labuhanbatu Utara.</p>
+      <p class="text-[10px] md:text-[11px] text-slate-400 mt-1 normal-case tracking-widest font-bold">v.0.1.0-beta</p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const GAS_URL = "/api";
+
+    const APP_CONFIG = {
+      hadir: {
+        mode: 'Timer',
+        start: '2026-08-23T00:00:00+07:00',
+        end: '2026-08-27T17:15:00+07:00',
+        msg: 'Maaf, form daftar hadir belum dibuka atau sudah ditutup.'
+      },
+      buku2: {
+        mode: 'Tutup',
+        msg: 'Sertifikat elektronik baru dapat diakses dan diunduh melalui sistem paling cepat H+1 setelah kegiatan selesai dilaksanakan.'
+      },
+      bantuan: {
+        wa: '6281263184787',
+        email: 'arsipkpu2026@gmail.com'
+      }
+    };
+
+    let savedTemplateConfig = ""; 
+    let currentDownloadType = 1; 
+
+    function cekStatusLokal(fitur) {
+        const now = new Date().getTime();
+        const cfg = APP_CONFIG[fitur];
+        
+        if (cfg.mode === 'Tutup') return { isOpen: false, message: cfg.msg };
+        if (cfg.mode === 'Buka') return { isOpen: true, message: '' };
+        if (cfg.mode === 'Timer') {
+            let start = cfg.start ? new Date(cfg.start).getTime() : 0;
+            let end = cfg.end ? new Date(cfg.end).getTime() : 0;
+            if (start && now < start) return { isOpen: false, message: cfg.msg };
+            if (end && now > end) return { isOpen: false, message: cfg.msg };
+            return { isOpen: true, message: '', start: cfg.start, end: cfg.end };
+        }
+        return { isOpen: true, message: '' };
+    }
+
+    function refreshLokalUI() {
+        const stHadir = cekStatusLokal('hadir');
+        const divHadir = document.getElementById('menu-hadir-card');
+        if(!stHadir.isOpen) tempelWatermark(divHadir); else hapusWatermark(divHadir);
+        
+        const stBuku2 = cekStatusLokal('buku2');
+        const divBuku2 = document.getElementById('menu-buku2-card');
+        if(!stBuku2.isOpen) tempelWatermark(divBuku2); else hapusWatermark(divBuku2);
+    }
+
+    window.addEventListener('DOMContentLoaded', (event) => { 
+        refreshLokalUI();
+    });
+
+    function toggleKodeInput() { document.getElementById('kode-container').style.display = document.getElementById('s-tipe-nomor').value === 'otomatis' ? 'block' : 'none'; }
+
+    function tempelWatermark(elemen) {
+      if(!elemen || elemen.querySelector('.watermark-overlay')) return;
+      elemen.style.filter = 'grayscale(50%) opacity(80%)';
+      elemen.innerHTML += `<div class='watermark-overlay absolute inset-0 flex items-center justify-center z-20 overflow-hidden bg-slate-900/30 backdrop-blur-[1px] rounded-[1.5rem]' style='pointer-events: none;'><div class='text-4xl md:text-5xl drop-shadow-lg mb-12' title='Belum Dibuka'>🔒</div></div>`;
+    }
+
+    function hapusWatermark(elemen) {
+      if(!elemen) return;
+      elemen.style.pointerEvents = 'auto';
+      elemen.style.filter = 'none';
+      const wm = elemen.querySelector('.watermark-overlay');
+      if(wm) wm.remove();
+    }
+
+    function validasiAksesFormLokal(fitur) {
+        const st = cekStatusLokal(fitur);
+        if (fitur === 'hadir') {
+            if (st.isOpen) {
+                navTo('hadir'); const infoDiv = document.getElementById('info-waktu-hadir');
+                let jejakHadir = localStorage.getItem('kpu_labura_hadir_v1');
+                let stempelHTML = '';
+                if (jejakHadir) {
+                    stempelHTML = `
+                    <div class="bg-emerald-100 border border-emerald-400 text-emerald-800 p-4 rounded-xl mb-3 shadow-sm font-bold text-xs md:text-sm flex flex-col gap-3">
+                        <div class="flex items-start gap-2">
+                            <span>✅</span> 
+                            <div>
+                                Pendaftaran terakhir di perangkat ini:<br>
+                                <span class="text-emerald-900 text-sm md:text-base font-black">${jejakHadir}</span><br>
+                                <span class="text-[10px] text-red-600 font-extrabold mt-1.5 block leading-tight">Silakan catat/ingat email di atas agar tidak lupa saat mencari sertifikat nanti.</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="hapusJejakLokal()" class="bg-white border border-emerald-300 text-emerald-700 px-4 py-2 rounded-lg text-[10px] w-fit hover:bg-emerald-50 active:scale-95 transition shadow-sm font-extrabold">Daftarkan Peserta Lain</button>
+                    </div>`;
+                }
+
+                if(APP_CONFIG.hadir.start || APP_CONFIG.hadir.end) {
+                    let strMulai = APP_CONFIG.hadir.start ? new Date(APP_CONFIG.hadir.start).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Kapan saja';
+                    let strSelesai = APP_CONFIG.hadir.end ? new Date(APP_CONFIG.hadir.end).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Tidak Terbatas';
+                    infoDiv.style.display = 'block'; 
+                    infoDiv.innerHTML = stempelHTML + `📌 <b>Jadwal Pendaftaran:</b><br>Dibuka: <b>${strMulai}</b><br>Ditutup: <b>${strSelesai}</b>`;
+                } else { 
+                    if(stempelHTML) {
+                        infoDiv.style.display = 'block'; infoDiv.innerHTML = stempelHTML;
+                    } else {
+                        infoDiv.style.display = 'none'; 
+                    }
+                }
+            } else { Swal.fire({title:'Ditutup', text:st.message, icon:'warning', heightAuto:false}); }
+        } else if (fitur === 'buku2') {
+            if (st.isOpen) { openDownloadView(2); } else { Swal.fire({title:'Informasi', text:st.message, icon:'info', heightAuto:false}); }
+        }
+    }
+
+    function hapusJejakLokal() {
+        localStorage.removeItem('kpu_labura_hadir_v1');
+        validasiAksesFormLokal('hadir'); 
+    }
+
+    function klikHubungiAdmin() {
+        let waConfig = APP_CONFIG.bantuan.wa;
+        let emailConfig = APP_CONFIG.bantuan.email;
+
+        if(!waConfig && !emailConfig) {
+            return Swal.fire({ icon: 'info', title: 'Informasi', text: 'Layanan bantuan tidak tersedia saat ini.', heightAuto: false, customClass: { popup: 'rounded-[1.5rem]' }});
+        }
+
+        let phone = waConfig ? waConfig.replace(/\D/g, '') : '';
+        if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+        else if (phone.startsWith('8')) phone = '62' + phone;
+
+        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let emailLink = isMobile ? `mailto:${emailConfig}` : `https://mail.google.com/mail/?view=cm&fs=1&to=${emailConfig}`;
+
+        let waButtonHtml = waConfig ? `<a href="https://wa.me/${phone}" target="_blank" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-green-600 active:scale-95 text-center flex items-center justify-center gap-2">💬 Hubungi via WhatsApp</a>` : '';
+        
+        let emailButtonHtml = emailConfig ? `<a href="${emailLink}" target="_blank" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-blue-600 active:scale-95 text-center flex items-center justify-center gap-2">📧 Hubungi via Email</a>` : '';
+
+        Swal.fire({
+            title: 'Pusat Bantuan',
+            html: `
+              <div class="text-left text-xs md:text-sm text-slate-700 mb-5 bg-amber-50 p-4 rounded-xl border border-amber-200 leading-relaxed shadow-inner">
+                  <p class="font-extrabold text-amber-900 mb-1">📌 Catatan Penting:</p>
+                  <p class="mb-2">Khusus pembuatan <b>Sertifikat</b>, proses akan dilakukan <b>setelah acara selesai</b>. Harap bersabar menunggu karena validasi dan penerapan TTE (Tanda Tangan Elektronik) dikerjakan satu per satu.</p>
+                  <p>Jika terdapat kesalahan penulisan nama atau email pada saat mengisi daftar hadir, silakan laporkan melalui kontak di bawah.</p>
+              </div>
+              <div class="flex flex-col gap-3 mt-2">
+                  ${waButtonHtml}
+                  ${emailButtonHtml}
+              </div>
+            `,
+            showConfirmButton: false, 
+            showCloseButton: true, 
+            heightAuto: false, 
+            customClass: { popup: 'rounded-[2rem] shadow-2xl' }
+        });
+    }
+
+    function showLoading(title = 'Memproses...') {
+      Swal.fire({
+        title: title,
+        html: `<div class="flex flex-col items-center p-3"><img src="https://upload.wikimedia.org/wikipedia/commons/4/46/KPU_Logo.svg" class="w-16 h-16 animate-bounce my-2 drop-shadow-md"><p class="text-xs text-slate-500 font-bold mt-2">Mohon tunggu...</p></div>`,
+        showConfirmButton: false, allowOutsideClick: false, allowEscapeKey: false, heightAuto: false, customClass: { popup: 'rounded-[2rem] shadow-2xl' }
+      });
+    }
+
+    function formatUrl(url) { return /^https?:\/\//i.test(url.trim()) ? url.trim() : 'https://' + url.trim(); }
+
+    async function fetchAPI(action, params = {}, method = 'GET', retries = 2) {
+      let url = GAS_URL + "?action=" + action;
+      let options = { method: method, redirect: "follow" };
+      if (method === 'GET') { for (let key in params) url += `&${key}=${encodeURIComponent(params[key])}`; } 
+      else { options.body = JSON.stringify({ action: action, ...params }); options.headers = { 'Content-Type': 'text/plain;charset=utf-8' }; }
+      for (let i = 0; i <= retries; i++) {
+          try { const response = await fetch(url, options); return await response.json(); } 
+          catch (err) { if (i === retries) { return { success: false, message: "Koneksi ke server terputus. Silakan coba klik sekali lagi." }; } await new Promise(res => setTimeout(res, 1000)); }
+      }
+    }
+
+    document.getElementById('btn-login-nav').addEventListener('click', function(e) {
+      if (sessionStorage.getItem("admin_logged_in") === "true") return navTo('admin');
+      if (e.altKey) navTo('login'); else Swal.fire({ icon: 'error', title: 'Dilarang Akses', text: 'Hanya Administrator.', heightAuto: false, customClass: { popup: 'rounded-2xl' }});
+    });
+
+    function navTo(view) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + view).classList.add('active');
+      if(sessionStorage.getItem("admin_logged_in") === "true") { document.getElementById("btn-login-nav").textContent = "🛠️"; document.getElementById("btn-logout-nav").classList.remove("hidden"); } 
+      else { document.getElementById("btn-login-nav").textContent = "🛠️"; document.getElementById("btn-logout-nav").classList.add("hidden"); }
+      if(view === 'home') refreshLokalUI();
+    }
+
+    function openDownloadView(type) {
+        currentDownloadType = type;
+        document.getElementById('download-title').innerText = (type === 1) ? "Cari Sertifikat Bedah Buku I" : "Cari Sertifikat Bedah Buku II";
+        document.getElementById('form-download').reset(); navTo('download');
+    }
+
+    async function navToAgenda() {
+      navTo('agenda'); document.getElementById('list-agenda-user').innerHTML = '<p class="text-center text-sm py-4 col-span-2">Memuat...</p>';
+      const res = await fetchAPI('getAgenda');
+      if (!res.data || res.data.length === 0) return document.getElementById('list-agenda-user').innerHTML = '<div class="bg-slate-50 p-6 rounded-xl text-center col-span-2"><p class="text-sm font-medium">Belum ada agenda.</p></div>';
+      
+      let html = '';
+      res.data.forEach(row => {
+        const waktuStart = new Date(row[2]); const strStart = waktuStart.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+        const waktuEnd = row[8] ? new Date(row[8]) : new Date(waktuStart.getTime() + (3 * 60 * 60 * 1000)); 
+        const strEnd = waktuEnd.toLocaleTimeString('id-ID', { timeStyle: 'short' });
+        const now = new Date().getTime(); const startMs = waktuStart.getTime(); const endMs = waktuEnd.getTime();
+        
+        let statusBadge = ''; let opacityStyle = ''; let watermark = '';
+        if (now < startMs) { 
+            statusBadge = `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase ml-2 animate-pulse shadow-sm border border-blue-200">⏳ Segera</span>`; 
+        } else if (now >= startMs && now <= endMs) { 
+            statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase ml-2 animate-pulse shadow-sm border border-green-200">🟢 Berlangsung</span>`; 
+        } else { 
+            statusBadge = `<span class="bg-slate-200 text-slate-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase ml-2 shadow-sm border border-slate-300">🏁 Berakhir</span>`; 
+            opacityStyle = 'opacity: 0.7; pointer-events: none; filter: grayscale(80%);';
+            watermark = `<div class='absolute inset-0 flex items-center justify-center z-20 overflow-hidden pointer-events-none'><div class='text-2xl md:text-4xl font-black text-slate-800/40 border-2 border-slate-800/40 rounded-xl px-4 py-2 rotate-[-20deg] select-none'>CLOSED</div></div>`;
+        }
+        
+        let infoSection = '';
+        if(row[4] || row[5] || row[6] || row[7]) {
+          infoSection = `<div class="mt-4 bg-white p-4 rounded-xl border border-slate-200 flex flex-col gap-3 shadow-sm relative z-10">`;
+          if(row[5] || row[6]) {
+            infoSection += `<div class="grid grid-cols-1 gap-3 text-xs">`;
+            if(row[5]) infoSection += `<div><span class="text-slate-500 block text-[10px] uppercase font-bold mb-1">Meeting ID</span><div class="flex justify-between items-center bg-slate-50 border border-slate-200 p-2 rounded-lg"><span class="font-mono font-bold text-slate-800">${row[5]}</span><button onclick="copyTxt('${row[5]}')" class="text-slate-400 hover:text-blue-600 transition pointer-events-auto" title="Copy">📋</button></div></div>`;
+            if(row[6]) infoSection += `<div><span class="text-slate-500 block text-[10px] uppercase font-bold mb-1">Passcode</span><div class="flex justify-between items-center bg-slate-50 border border-slate-200 p-2 rounded-lg"><span class="font-mono font-bold text-slate-800">${row[6]}</span><button onclick="copyTxt('${row[6]}')" class="text-slate-400 hover:text-blue-600 transition pointer-events-auto" title="Copy">📋</button></div></div>`;
+            infoSection += `</div>`;
+          }
+          if(row[4] || row[7]) {
+            infoSection += `<div class="flex flex-col sm:flex-row gap-2 mt-2">`;
+            if(row[4]) infoSection += `<a href="${formatUrl(row[4])}" target="_blank" class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-md text-center transition pointer-events-auto">🌐 Buka Tautan</a>`;
+            if(row[7]) infoSection += `<a href="${formatUrl(row[7])}" target="_blank" class="flex-1 bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-100 text-center transition pointer-events-auto">🖼️ Background</a>`;
+            infoSection += `</div>`;
+          }
+          infoSection += `</div>`;
+        }
+        html += `<div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden" style="${opacityStyle}">${watermark}<div class="flex flex-col gap-1 relative z-10"><span class="bg-indigo-100 text-indigo-700 w-fit px-2 py-0.5 rounded-md text-[9px] font-bold uppercase">${row[3]}</span><h3 class="font-extrabold text-base mt-1">${row[1]}</h3><p class="text-[11px] text-slate-600 font-medium flex items-center flex-wrap gap-y-1">🗓️ ${strStart} - ${strEnd} WIB ${statusBadge}</p></div>${infoSection}</div>`;
+      });
+      document.getElementById('list-agenda-user').innerHTML = html;
+    }
+
+    async function navToEbook() {
+      navTo('ebook'); document.getElementById('list-ebook-user').innerHTML = '<p class="col-span-1 sm:col-span-2 text-center text-sm py-4">Memuat...</p>';
+      const res = await fetchAPI('getEbook');
+      if (!res.data || res.data.length === 0) return document.getElementById('list-ebook-user').innerHTML = '<div class="col-span-1 sm:col-span-2 bg-slate-50 p-6 rounded-xl text-center"><p class="text-sm font-medium">Belum ada materi.</p></div>';
+      let html = '';
+      res.data.forEach(row => { html += `<div class="bg-purple-50 p-5 rounded-2xl border border-purple-200 shadow-sm hover:-translate-y-1 transition"><h3 class="font-extrabold text-purple-900 text-base">${row[1]}</h3><p class="text-[11px] text-purple-700 mt-1 mb-3 line-clamp-2">${row[2] || '-'}</p><a href="${formatUrl(row[3])}" target="_blank" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold inline-block w-full text-center shadow-md">Unduh File</a></div>`; });
+      document.getElementById('list-ebook-user').innerHTML = html;
+    }
+
+    function copyTxt(text) { navigator.clipboard.writeText(text).then(() => Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Tersalin!', heightAuto: false })); }
+
+    async function submitHadirTeks(e) {
+      e.preventDefault();
+      const st = cekStatusLokal('hadir');
+      if (!st.isOpen) return Swal.fire({title:'Gagal', text:st.message, icon:'warning', heightAuto:false});
+
+      const inputNama = document.getElementById('h-nama').value.trim();
+      const inputEmail = document.getElementById('h-email').value.toLowerCase().trim();
+      
+      showLoading('Mendaftarkan Kehadiran...');
+      const dataText = [ inputNama, document.getElementById('h-instansi').value, inputEmail, document.getElementById('h-hp').value, document.getElementById('h-auto-email').checked ];
+      const resTeks = await fetchAPI('hadirTeks', { data: dataText }, 'POST');
+      
+      if (resTeks.success) { 
+          const waktuSekarang = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+          localStorage.setItem('kpu_labura_hadir_v1', `${inputNama} | ${inputEmail} (${waktuSekarang} WIB)`);
+          
+          document.getElementById('form-hadir').reset(); 
+          navTo('home'); 
+          Swal.fire({title:'Berhasil!', text:resTeks.message, icon:'success', heightAuto:false}); 
+      } else { Swal.fire({title:'Gagal', text:resTeks.message, icon:'warning', heightAuto:false}); }
+    }
+
+    async function cariEmailLupa() {
+        const inputNama = document.getElementById('d-nama').value.trim();
+        if(!inputNama || inputNama.length < 3) return Swal.fire({icon: 'warning', title: 'Perhatian', text: 'Ketik minimal 3 huruf nama Anda di kolom atas terlebih dahulu.', heightAuto: false});
+        
+        showLoading('Mencari Petunjuk Email...');
+        const res = await fetchAPI('cariEmail', { nama: inputNama, jenis: currentDownloadType }, 'GET');
+        
+        if(res.success) {
+            Swal.fire({
+                icon: 'success', 
+                title: 'Petunjuk Ditemukan!', 
+                html: `Sistem menemukan email yang cocok dengan nama tersebut:<br><br><b class="text-xl text-blue-700 tracking-wide bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 inline-block my-2">${res.email}</b><br><br><p class="text-xs text-red-600 font-bold mt-2">Silakan ingat-ingat dan KETIK SECARA LENGKAP email tersebut di kolom pencarian untuk mengunduh sertifikat.</p>`, 
+                heightAuto: false
+            });
+        } else {
+            Swal.fire({icon: 'error', title: 'Tidak Ditemukan', text: res.message, heightAuto: false});
+        }
+    }
+
+    async function submitDownload(e) {
+      e.preventDefault(); showLoading('Mencari...');
+      const res = await fetchAPI('download', { nama: document.getElementById('d-nama').value, email: document.getElementById('d-email').value, jenis: currentDownloadType }, 'GET');
+      if (res.success) Swal.fire({ title: 'Ditemukan!', text: res.message, icon: 'success', confirmButtonText: 'Unduh', heightAuto: false }).then((r) => { if (r.isConfirmed) window.open(res.url, '_blank'); });
+      else Swal.fire({title:'Gagal', text:res.message, icon:'warning', heightAuto:false});
+    }
+
+    async function submitLogin(e) {
+      e.preventDefault(); showLoading('Verifikasi...');
+      const res = await fetchAPI('login', { user: document.getElementById('l-user').value, pass: document.getElementById('l-pass').value }, 'GET');
+      if (res.success) { sessionStorage.setItem("admin_logged_in", "true"); Swal.close(); navTo('admin'); loadDataPeserta(); loadSettings(); loadAgendaAdmin(); loadEbookAdmin(); } 
+      else Swal.fire({title:'Akses Ditolak', text:res.message, icon:'error', heightAuto:false});
+    }
+    function logoutAdmin() { sessionStorage.removeItem("admin_logged_in"); navTo('home'); }
+
+    async function loadSettings() {
+      const res = await fetchAPI('getSettings'); 
+      if(res) { 
+          document.getElementById('s-tipe-nomor').value = res.kode === 'otomatis' ? 'otomatis' : (res.kode ? 'otomatis' : 'manual');
+          document.getElementById('s-kode').value = res.kode || '/HM.07-Kt/1223/2/2026';
+          document.getElementById('a-email').value = res.adminEmail || '';
+          
+          savedTemplateConfig = res.templateConfig || "";
+          let localConfig = localStorage.getItem('localTemplateConfig');
+          if (localConfig) { els = JSON.parse(localConfig); changeCanvasElement(); previewCanvas(); }
+      }
+    }
+
+    function muatKonfigurasiTerakhir() {
+        if(!savedTemplateConfig) return Swal.fire({title:'Info', text:'Belum ada pengaturan template yang tersimpan di server.', icon:'info', heightAuto:false});
+        try { els = JSON.parse(savedTemplateConfig); localStorage.setItem('localTemplateConfig', savedTemplateConfig); changeCanvasElement(); previewCanvas(); Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Dimuat dari server!', heightAuto:false}); } 
+        catch(e) { console.error("Error parse JSON template"); }
+    }
+
+    async function saveSetUmum() {
+        showLoading('Menyimpan Pengaturan Umum...');
+        const res = await fetchAPI('simpanSetUmum', { kode: document.getElementById('s-kode').value, adminEmail: document.getElementById('a-email').value }, 'POST');
+        if(res.success) { Swal.fire({title:'Tersimpan', text:'Pengaturan Umum berhasil disimpan.', icon:'success', heightAuto:false}); }
+    }
+
+    async function saveSetTemplate() {
+        showLoading('Menyimpan Template & Koordinat...');
+        const currentConfigStr = JSON.stringify(els);
+        const res = await fetchAPI('simpanSetTemplate', { templateConfig: currentConfigStr }, 'POST');
+        if(res.success) { savedTemplateConfig = currentConfigStr; localStorage.removeItem('localTemplateConfig'); Swal.fire({title:'Tersimpan', text:'Desain dan titik koordinat tersimpan ke server.', icon:'success', heightAuto:false}); }
+    }
+
+    async function changePassword() {
+      showLoading('Memproses...');
+      const res = await fetchAPI('ubahPass', { oldPass: document.getElementById('p-old').value, newPass: document.getElementById('p-new').value }, 'POST');
+      if(res.success) Swal.fire({title:'Berhasil', text:'', icon:'success', heightAuto:false}); else Swal.fire({title:'Gagal', text:res.message, icon:'error', heightAuto:false});
+    }
+
+    async function loadAgendaAdmin() {
+      document.getElementById('table-agenda-admin').innerHTML = '<tr><td colspan="3" class="p-2 text-center">Memuat...</td></tr>';
+      const res = await fetchAPI('getAgenda');
+      if (!res.data || res.data.length === 0) return document.getElementById('table-agenda-admin').innerHTML = '<tr><td colspan="3" class="text-center p-2">Kosong</td></tr>';
+      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2">${new Date(row[2]).toLocaleString()}</td><td class="p-2"><button onclick="delAgenda('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
+      document.getElementById('table-agenda-admin').innerHTML = html;
+    }
+    async function submitAgendaAdmin(e) {
+      e.preventDefault(); showLoading('Menyimpan...');
+      await fetchAPI('addAgenda', { data: [document.getElementById('a-judul').value, document.getElementById('a-waktu').value, document.getElementById('a-platform').value, document.getElementById('a-link').value, document.getElementById('a-id').value, document.getElementById('a-pass').value, document.getElementById('a-bg').value, document.getElementById('a-waktu-selesai').value] }, 'POST');
+      Swal.close(); document.getElementById('form-agenda').reset(); loadAgendaAdmin();
+    }
+    async function delAgenda(id) { if(!confirm("Hapus?")) return; showLoading('Menghapus...'); await fetchAPI('delAgenda', { id: id }, 'POST'); loadAgendaAdmin(); Swal.close(); }
+
+    async function loadEbookAdmin() {
+      document.getElementById('table-ebook-admin').innerHTML = '<tr><td colspan="2" class="p-2 text-center">Memuat...</td></tr>';
+      const res = await fetchAPI('getEbook');
+      if (!res.data || res.data.length === 0) return document.getElementById('table-ebook-admin').innerHTML = '<tr><td colspan="2" class="text-center p-2">Kosong</td></tr>';
+      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2"><button onclick="delEbook('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
+      document.getElementById('table-ebook-admin').innerHTML = html;
+    }
+    async function submitEbookAdmin(e) {
+      e.preventDefault(); showLoading('Menyimpan...');
+      await fetchAPI('addEbook', { data: [document.getElementById('e-judul').value, document.getElementById('e-desc').value, document.getElementById('e-link').value] }, 'POST');
+      Swal.close(); document.getElementById('form-ebook').reset(); loadEbookAdmin();
+    }
+    async function delEbook(id) { if(!confirm("Hapus E-Book?")) return; showLoading('Menghapus...'); await fetchAPI('delEbook', { id: id }, 'POST'); loadEbookAdmin(); Swal.close(); }
+
+    const canvas = document.getElementById('cert-canvas'); const ctx = canvas.getContext('2d');
+    let basePdfBytes = null; let templateImg = new Image(); let templateType = 'none'; 
+    let isDragging = false; let activeEl = 'nama'; 
+    let els = {
+      nama: { x: 50, y: 50, w: 300, h: 50, size: 55, font: 'Pacifico', weight: 'normal', align: 'center', text: '[NAMA PESERTA]' },
+      nomor: { x: 50, y: 150, w: 250, h: 30, size: 13, font: 'Poppins', weight: 'bold', align: 'left', text: 'Nomor : 1/HM.07-Kt/1223/2/2026' }
+    };
+
+    function changeCanvasElement() { 
+        activeEl = document.getElementById('el-select').value; 
+        if(!els[activeEl]) return; 
+        document.getElementById('coord-x').value = Math.round(els[activeEl].x);
+        document.getElementById('coord-y').value = Math.round(els[activeEl].y);
+        document.getElementById('font-size').value = els[activeEl].size; 
+        document.getElementById('font-align').value = els[activeEl].align; 
+        document.getElementById('font-family').value = els[activeEl].font; 
+        document.getElementById('font-weight').value = els[activeEl].weight || 'bold'; 
+        previewCanvas(); 
+    }
+    
+    function updateElementStyle() { 
+        if(!els[activeEl]) return; 
+        els[activeEl].x = parseFloat(document.getElementById('coord-x').value) || els[activeEl].x;
+        els[activeEl].y = parseFloat(document.getElementById('coord-y').value) || els[activeEl].y;
+        els[activeEl].size = parseInt(document.getElementById('font-size').value) || 20; 
+        els[activeEl].align = document.getElementById('font-align').value; 
+        els[activeEl].font = document.getElementById('font-family').value; 
+        els[activeEl].weight = document.getElementById('font-weight').value; 
+        saveLocalConfig();
+        previewCanvas(); 
+    }
+
+    function saveLocalConfig() {
+        localStorage.setItem('localTemplateConfig', JSON.stringify(els));
+    }
+
+    async function loadTemplate(e) {
+      const file = e.target.files[0]; if (!file) return; 
+      document.getElementById('pdf-loading').style.display = 'flex'; basePdfBytes = null; templateType = 'none';
+      const reader = new FileReader();
+
+      if (file.type === 'application/pdf') {
+          reader.onload = async function(event) {
+              basePdfBytes = new Uint8Array(event.target.result); 
+              try {
+                  const loadingTask = pdfjsLib.getDocument({ data: basePdfBytes }); const pdf = await loadingTask.promise; const page = await pdf.getPage(1);
+                  let viewport = page.getViewport({ scale: 1.5 }); const tempCanvas = document.createElement('canvas'); const tempCtx = tempCanvas.getContext('2d');
+                  tempCanvas.width = viewport.width; tempCanvas.height = viewport.height; tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                  await page.render({ canvasContext: tempCtx, viewport: viewport }).promise;
+                  templateImg.onload = function() { templateType = 'pdf-preview'; canvas.width = templateImg.width; canvas.height = templateImg.height; canvas.style.width = '100%'; if(!savedTemplateConfig && !localStorage.getItem('localTemplateConfig')) setupDefaultCoords(); else changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none'; }; templateImg.src = tempCanvas.toDataURL('image/jpeg', 0.8);
+              } catch (error) {
+                  templateType = 'fallback'; canvas.width = 1123; canvas.height = 794; canvas.style.width = '100%'; if(!savedTemplateConfig && !localStorage.getItem('localTemplateConfig')) setupDefaultCoords(); else changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none';
+              }
+          }; reader.readAsArrayBuffer(file);
+      } else {
+          reader.onload = function(event) {
+              templateImg.onload = function() { templateType = 'image'; canvas.width = templateImg.width; canvas.height = templateImg.height; canvas.style.width = '100%'; if(!savedTemplateConfig && !localStorage.getItem('localTemplateConfig')) setupDefaultCoords(); else changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none'; }; templateImg.src = event.target.result;
+          }; reader.readAsDataURL(file);
+      }
+    }
+
+    function setupDefaultCoords() {
+      els.nama.x = canvas.width * 0.1; els.nama.y = canvas.height * 0.4; els.nama.w = canvas.width * 0.8; els.nama.h = canvas.height * 0.1;
+      els.nomor.x = canvas.width * 0.1; els.nomor.y = canvas.height * 0.2; els.nomor.w = canvas.width * 0.8; els.nomor.h = canvas.height * 0.05; changeCanvasElement(); 
+    }
+
+    function previewCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); 
+      if (templateType === 'image' || templateType === 'pdf-preview') { ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height); } 
+      else if (templateType === 'fallback') { ctx.fillStyle = "#e2e8f0"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#64748b"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("[Preview Transparan]", canvas.width/2, canvas.height/2); } else return;
+      
+      Object.keys(els).forEach(key => {
+        let el = els[key]; let isAct = (key === activeEl);
+        ctx.strokeStyle = isAct ? "rgba(239, 68, 68, 0.9)" : "rgba(100, 116, 139, 0.4)"; ctx.lineWidth = isAct ? 4 : 2; if(isAct) ctx.setLineDash([]); else ctx.setLineDash([5, 5]);
+        ctx.strokeRect(el.x, el.y, el.w, el.h); ctx.fillStyle = isAct ? "rgba(239, 68, 68, 0.15)" : "transparent"; ctx.fillRect(el.x, el.y, el.w, el.h); ctx.setLineDash([]); 
+        
+        let fontStr = el.font; if (el.font === 'Pacifico' || el.font === 'Poppins') fontStr = `'${el.font}'`; else if (el.font === 'Courier') fontStr = "'Courier New', Courier, monospace";
+        let weightStr = (el.weight === 'normal') ? 'normal' : 'bold'; ctx.font = `${weightStr} ${el.size}px ${fontStr}`; 
+        ctx.fillStyle = isAct ? "#000" : "#475569"; ctx.textBaseline = "middle";
+        let textX = el.align === 'center' ? el.x + (el.w / 2) : (el.align === 'right' ? el.x + el.w : el.x);
+        ctx.textAlign = el.align; ctx.fillText(el.text, textX, el.y + (el.h / 2));
+        if (isAct) {
+            document.getElementById('coord-info').textContent = `[${key.toUpperCase()}] Posisi: X=${Math.round(textX)}, Y=${Math.round(el.y + (el.h / 2))}, Ukuran=${el.size}px`;
+            document.getElementById('coord-x').value = Math.round(el.x);
+            document.getElementById('coord-y').value = Math.round(el.y);
+        }
+      });
+    }
+
+    function handleStart(e) { isDragging = true; updateRect(e); } 
+    function handleMove(e) { if (isDragging) { updateRect(e); e.preventDefault(); } } 
+    function handleEnd() { isDragging = false; saveLocalConfig(); previewCanvas(); }
+    canvas.addEventListener('mousedown', handleStart); canvas.addEventListener('mousemove', handleMove); canvas.addEventListener('mouseup', handleEnd);
+    canvas.addEventListener('touchstart', handleStart, {passive: false}); canvas.addEventListener('touchmove', handleMove, {passive: false}); canvas.addEventListener('touchend', handleEnd);
+    
+    function updateRect(e) {
+      if(templateType === 'none') return; 
+      const cssRect = canvas.getBoundingClientRect(), clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const scaleX = canvas.width / cssRect.width, scaleY = canvas.height / cssRect.height;
+      let targetX = (clientX - cssRect.left) * scaleX; let targetY = (clientY - cssRect.top) * scaleY; 
+      els[activeEl].x = targetX; els[activeEl].y = targetY; previewCanvas();
+    }
+
+    let dbPeserta = [];
+    async function loadDataPeserta() {
+      document.getElementById('table-peserta').innerHTML = '<tr><td colspan="3" class="p-6 text-center text-slate-400 font-medium">Memuat...</td></tr>';
+      try {
+        const res = await fetchAPI('getData'); dbPeserta = res.data;
+        if (!dbPeserta || dbPeserta.length === 0) return document.getElementById('table-peserta').innerHTML = '<tr><td colspan="3" class="text-center p-6 font-medium text-slate-500">Kosong</td></tr>'; 
+        let html = '';
+        dbPeserta.forEach((row, i) => { 
+          let hpRaw = row[4] ? row[4].toString().replace(/\D/g, '') : '';
+          let txtHp = hpRaw ? `📞 +${hpRaw}` : '📞 -';
+          let emailFlags = `Email Minta: ${row[5] === "Ya" ? "Ya" : "-"} | Status: <span class="${row[6]==='Terkirim'?'text-green-600 font-bold':''}">${row[6] || 'Belum'}</span>`;
+          html += `<tr class="border-b hover:bg-slate-50 transition row-peserta"><td class="p-3"><input type="checkbox" class="chk-peserta rounded w-4 h-4 text-blue-600" value="${i}"></td><td class="p-3 text-center font-bold text-slate-600">${i+1}</td><td class="p-3"><p class="font-bold text-slate-800 search-target">${row[1]}</p><div class="text-[10px] font-normal text-slate-500 mt-1 search-target">${row[3]}<br>${txtHp}<br>${emailFlags}</div></td></tr>`; 
+        });
+        document.getElementById('table-peserta').innerHTML = html;
+      } catch (e) { document.getElementById('table-peserta').innerHTML = `<tr><td colspan="3" class="text-center p-6 text-red-500 font-bold">Error.</td></tr>`; }
+    }
+    
+    function toggleCheckAll() { const isChecked = document.getElementById('check-all').checked; document.querySelectorAll('.chk-peserta').forEach(el => el.checked = isChecked); }
+
+    function filterPeserta() {
+        let input = document.getElementById("search-peserta").value.toLowerCase();
+        let rows = document.querySelectorAll(".row-peserta");
+        rows.forEach(row => {
+            let textData = row.innerText.toLowerCase();
+            row.style.display = textData.includes(input) ? "" : "none";
+        });
+    }
+
+    const fontUrls = { 'Pacifico': 'https://raw.githubusercontent.com/google/fonts/main/ofl/pacifico/Pacifico-Regular.ttf', 'Poppins': 'https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf' };
+    let fontCacheBuffer = {}; let fontCacheBase64 = {};
+
+    async function getCustomFontData(fontName) {
+        if (fontName === 'Arial' || fontName === 'Times' || fontName === 'Courier' || fontCacheBuffer[fontName]) return true; 
+        try { const res = await fetch(fontUrls[fontName]); const arrayBuffer = await res.arrayBuffer(); fontCacheBuffer[fontName] = arrayBuffer; let binary = ''; const bytes = new Uint8Array(arrayBuffer); for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]); fontCacheBase64[fontName] = window.btoa(binary); return true; } catch(e) { return false; }
+    }
+
+    async function generateMassal() {
+      if (templateType === 'none' && !savedTemplateConfig && !localStorage.getItem('localTemplateConfig')) return Swal.fire({title:'Error', text:'Upload template PDF/Gambar terlebih dahulu!', icon:'error', heightAuto:false});
+      const checks = document.querySelectorAll('.chk-peserta:checked');
+      if (checks.length === 0) return Swal.fire({title:'Peringatan', text:'Pilih minimal 1 peserta.', icon:'warning', heightAuto:false});
+      const modeNomor = document.getElementById('s-tipe-nomor').value, kodeFormat = document.getElementById('s-kode').value || '/HM.07-Kt/1223/2/2026';
+      
+      showLoading(`Mengunduh Font...`);
+      for (let key of Object.keys(els)) { let fName = els[key].font; if(fName !== 'Arial' && fName !== 'Times' && fName !== 'Courier') await getCustomFontData(fName); }
+
+      showLoading(`Memproses 0 dari ${checks.length}`);
+      let successCount = 0;
+      
+      if (basePdfBytes) {
+          const { PDFDocument, rgb } = PDFLib;
+          for (let i = 0; i < checks.length; i++) {
+            let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], fileName = `${nama}_${email}.pdf`;
+            let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 1) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); let nomorSertifikat = "Nomor : " + rawNomor;
+            document.querySelector('.swal2-title').innerHTML = `Memproses ${i+1}/${checks.length}<br><small>${nama}</small>`;
+            try {
+                const pdfDoc = await PDFDocument.load(basePdfBytes); pdfDoc.registerFontkit(window.fontkit); 
+                let pdfCustomFonts = {};
+                for (let key of Object.keys(els)) { let fName = els[key].font; if(fName !== 'Arial' && fName !== 'Times' && fName !== 'Courier' && fontCacheBuffer[fName] && !pdfCustomFonts[fName]) pdfCustomFonts[fName] = await pdfDoc.embedFont(fontCacheBuffer[fName]); }
+                const firstPage = pdfDoc.getPages()[0]; const { width, height } = firstPage.getSize(); const scaleX = width / canvas.width, scaleY = height / canvas.height;
+                let isNamaBold = els.nama.weight !== 'normal'; let fNama = undefined;
+                if(els.nama.font === 'Arial') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); else if(els.nama.font === 'Times') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.TimesRomanBold : PDFLib.StandardFonts.TimesRoman); else if(els.nama.font === 'Courier') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.CourierBold : PDFLib.StandardFonts.Courier); else if(pdfCustomFonts[els.nama.font]) fNama = pdfCustomFonts[els.nama.font]; else fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); 
+                let textW_nama = fNama.widthOfTextAtSize(nama, els.nama.size * scaleY); let nx = els.nama.x * scaleX; if (els.nama.align === 'center') nx = nx + ((els.nama.w * scaleX) / 2) - (textW_nama / 2); else if (els.nama.align === 'right') nx = nx + (els.nama.w * scaleX) - textW_nama;
+                let yOffsetNama = (els.nama.size * scaleY) * 0.35; firstPage.drawText(nama, { x: nx, y: height - ((els.nama.y + (els.nama.h/2)) * scaleY) - yOffsetNama, size: els.nama.size * scaleY, font: fNama, color: rgb(0, 0, 0) }); 
+
+                let isNomorBold = els.nomor.weight !== 'normal'; let fNomor = undefined;
+                if(els.nomor.font === 'Arial') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); else if(els.nomor.font === 'Times') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.TimesRomanBold : PDFLib.StandardFonts.TimesRoman); else if(els.nomor.font === 'Courier') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.CourierBold : PDFLib.StandardFonts.Courier); else if(pdfCustomFonts[els.nomor.font]) fNomor = pdfCustomFonts[els.nomor.font]; else fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica);
+                let textW_nomor = fNomor.widthOfTextAtSize(nomorSertifikat, els.nomor.size * scaleY); let nox = els.nomor.x * scaleX; if (els.nomor.align === 'center') nox = nox + ((els.nomor.w * scaleX) / 2) - (textW_nomor / 2); else if (els.nomor.align === 'right') nox = nox + (els.nomor.w * scaleX) - textW_nomor;
+                let yOffsetNomor = (els.nomor.size * scaleY) * 0.35; firstPage.drawText(nomorSertifikat, { x: nox, y: height - ((els.nomor.y + (els.nomor.h/2)) * scaleY) - yOffsetNomor, size: els.nomor.size * scaleY, font: fNomor, color: rgb(0, 0, 0) });
+
+                const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
+                const res = await fetchAPI('simpanPdf', { base64Data: pdfBytes, filename: fileName, jenis: currentDownloadType }, 'POST', 0);
+                if(res.success) successCount++;
+            } catch (err) {}
+          }
+      } 
+      else if (templateImg.src) {
+          const orientation = canvas.width > canvas.height ? 'l' : 'p';
+          for (let i = 0; i < checks.length; i++) {
+            let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], fileName = `${nama}_${email}.pdf`;
+            let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 1) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); let nomorSertifikat = "Nomor : " + rawNomor;
+            document.querySelector('.swal2-title').innerHTML = `Memproses ${i+1}/${checks.length}<br><small>${nama}</small>`;
+            const pdf = new window.jspdf.jsPDF({ orientation: orientation, unit: 'px', format: [canvas.width, canvas.height] });
+            for (let key of Object.keys(els)) { let fName = els[key].font; if(fName !== 'Arial' && fName !== 'Times' && fName !== 'Courier' && fontCacheBuffer[fName]) { pdf.addFileToVFS(`${fName}.ttf`, fontCacheBase64[fName]); pdf.addFont(`${fName}.ttf`, fName, 'normal'); } }
+            pdf.addImage(templateImg.src, 'JPEG', 0, 0, canvas.width, canvas.height);
+            let nx = els.nama.align === 'center' ? els.nama.x + els.nama.w/2 : (els.nama.align === 'right' ? els.nama.x + els.nama.w : els.nama.x); let wNama = els.nama.weight === 'normal' ? 'normal' : 'bold';
+            if(els.nama.font === 'Arial') pdf.setFont("helvetica", wNama); else if(els.nama.font === 'Times') pdf.setFont("times", wNama); else if(els.nama.font === 'Courier') pdf.setFont("courier", wNama); else pdf.setFont(els.nama.font, "normal");
+            pdf.setFontSize(els.nama.size); pdf.setTextColor(0, 0, 0); pdf.text(nama, nx, els.nama.y + (els.nama.h/2), { align: els.nama.align, baseline: 'middle' });
+            let nox = els.nomor.align === 'center' ? els.nomor.x + els.nomor.w/2 : (els.nomor.align === 'right' ? els.nomor.x + els.nomor.w : els.nomor.x); let wNomor = els.nomor.weight === 'normal' ? 'normal' : 'bold';
+            if(els.nomor.font === 'Arial') pdf.setFont("helvetica", wNomor); else if(els.nomor.font === 'Times') pdf.setFont("times", wNomor); else if(els.nomor.font === 'Courier') pdf.setFont("courier", wNomor); else pdf.setFont(els.nomor.font, "normal");
+            pdf.setFontSize(els.nomor.size); pdf.text(nomorSertifikat, nox, els.nomor.y + (els.nomor.h/2), { align: els.nomor.align, baseline: 'middle' });
+            try { const res = await fetchAPI('simpanPdf', { base64Data: pdf.output('datauristring'), filename: fileName, jenis: currentDownloadType }, 'POST', 0); if(res.success) successCount++; } catch (err) {}
+          }
+      }
+      Swal.fire({ title: 'Selesai!', text: `Berhasil mencetak ${successCount} PDF.`, icon: 'success', heightAuto: false });
+    }
+
+    async function triggerKirimEmail() {
+      const checks = document.querySelectorAll('.chk-peserta:checked');
+      let confirmText = ''; let emailsToTarget = [];
+      if (checks.length > 0) {
+          checks.forEach(cb => emailsToTarget.push(dbPeserta[cb.value][3]));
+          confirmText = `Anda telah mencentang ${checks.length} peserta. Email hanya akan dikirimkan ke peserta yang dicentang.`;
+      } else {
+          confirmText = `Anda TIDAK mencentang satupun peserta. Sistem akan mengirim email SECARA MASSAL. Lanjut?`;
+      }
+
+      Swal.fire({
+        title: 'Konfirmasi Pengiriman Email', text: confirmText, icon: 'warning', showCancelButton: true, confirmButtonText: 'Kirim Sekarang', confirmButtonColor: '#16a34a', heightAuto: false
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          showLoading('Mengirim Email...');
+          const res = await fetchAPI('kirimEmailTTE', { selectedEmails: emailsToTarget }, 'POST', 0); 
+          if(res.success) { Swal.fire({title:'Selesai!', text:res.message, icon:'success', heightAuto:false}); loadDataPeserta(); } else Swal.fire({title:'Gagal', text:res.message, icon:'error', heightAuto:false});
+        }
+      });
+    }
+  </script>
+</body>
+</html>
