@@ -640,14 +640,14 @@
         const inputNama = document.getElementById('d-nama').value.trim();
         if(!inputNama || inputNama.length < 3) return Swal.fire({icon: 'warning', title: 'Perhatian', text: 'Ketik nama Anda di kolom atas terlebih dahulu (Misalnya: "John Doe", Bisa ketik John atau keseluruhan nama).', heightAuto: false});
         
-        showLoading('Mencari Petunjuk Email...');
+        showLoading('Mencari Email...');
         // Request ini otomatis lari ke GAS_URL karena action = 'cariEmail'[cite: 3]
         const res = await fetchAPI('cariEmail', { nama: inputNama, jenis: currentDownloadType }, 'GET');
         
         if(res.success) {
             Swal.fire({
                 icon: 'success', 
-                title: 'Petunjuk Ditemukan!', 
+                title: 'Ditemukan!', 
                 html: `Sistem menemukan email yang cocok dengan nama tersebut:<br><br><b class="text-xl text-blue-700 tracking-wide bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 inline-block my-2">${res.email}</b><br><br><p class="text-xs text-red-600 font-bold mt-2">Silakan ingat-ingat dan KETIK SECARA LENGKAP email tersebut di kolom pencarian untuk mengunduh sertifikat.</p>`, 
                 heightAuto: false
             });
