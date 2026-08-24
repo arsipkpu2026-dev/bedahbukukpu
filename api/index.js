@@ -10,7 +10,12 @@ async function dbQuery(method, table, queryParams = "", body = null) {
   const url = `${SUPABASE_URL}/rest/v1/${table}${queryParams}`;
   const options = {
     method: method,
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }
+    headers: { 
+        'apikey': SUPABASE_KEY, 
+        'Authorization': `Bearer ${SUPABASE_KEY}`, 
+        'Content-Type': 'application/json', 
+        'Prefer': 'return=representation' 
+    }
   };
   if (body) options.body = JSON.stringify(body);
   const res = await fetch(url, options);
@@ -47,19 +52,6 @@ module.exports = async function handler(req, res) {
       const data = await dbQuery('GET', 'kehadiran', '?select=*&order=id.asc');
       result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat]) };
     }
-    else if (action === 'simpanPdf') {
-      // 📌 Mengunci upload HANYA ke bucket 'generate' sesuai instruksi
-      const bucketName = 'generate'; 
-      const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
-      const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/pdf' },
-        body: buffer
-      });
-      if(!fileRes.ok) throw new Error(await fileRes.text());
-      result = { success: true };
-    }
-    // HAPUS fungsi cariEmail dan download dari sini karena sudah di-handle oleh G-Drive via GAS
     else if (action === 'login') {
         const data = await dbQuery('GET', 'admin', `?username=eq.${req.query.user}&password=eq.${hashSHA256(req.query.pass)}&select=*`);
         result = data.length > 0 ? { success: true } : { success: false, message: 'Username atau Password salah!' };
@@ -105,11 +97,10 @@ module.exports = async function handler(req, res) {
     else if (action === 'delEbook') {
         await dbQuery('DELETE', 'ebook', `?id=eq.${parsedBody.id}`); result = { success: true };
     }
-    else if (action === 'kirimEmailTTE') {
-        if (parsedBody.selectedEmails && parsedBody.selectedEmails.length > 0) {
-           for(let e of parsedBody.selectedEmails) await dbQuery('PATCH', 'kehadiran', `?email=eq.${e}`, { status_email: 'Terkirim' });
-        } else { await dbQuery('PATCH', 'kehadiran', `?auto_email=eq.true`, { status_email: 'Terkirim' }); }
-        result = { success: true, message: "Status di-update." };
+    else if (action === 'updateStatusEmail') {
+        // Fungsi baru: Hanya update status di DB Vercel, email dikirim oleh GAS
+        await dbQuery('PATCH', 'kehadiran', `?email=eq.${parsedBody.email}`, { status_email: 'Terkirim' });
+        result = { success: true };
     }
     else { result = { success: false, message: "Aksi tidak dikenali." }; }
   } catch (err) {
