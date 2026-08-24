@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
       result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat]) };
     }
     else if (action === 'simpanPdf') {
-      // Hasil generate massal oleh admin diarahkan secara mutlak ke bucket 'generate'
+      // Hasil generate massal oleh admin selalu masuk ke bucket 'generate'[cite: 12]
       const bucketName = 'generate';
       const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
       const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
@@ -61,15 +61,16 @@ module.exports = async function handler(req, res) {
     }
     else if (action === 'cariEmail') {
         const nama = req.query.nama.toLowerCase();
-        // Bedah Buku II menggunakan bucket 'sertifikat2', Bedah Buku I menggunakan bucket 'sertifikat'[cite: 8]
+        // Pencarian download peserta: jenis 2 ke bucket 'sertifikat2', jenis 1 ke bucket 'sertifikat'[cite: 12]
         const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';
 
         const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
             method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prefix: "" })
+            body: JSON.stringify({ prefix: "", limit: 100, offset: 0 })
         });
         const files = await listRes.json();
-        const matched = files.find(f => f.name && f.name.toLowerCase().includes(nama));
+        const fileList = Array.isArray(files) ? files : (files.data || []);
+        const matched = fileList.find(f => f.name && f.name.toLowerCase().includes(nama));
 
         if(matched && matched.name) {
             let parts = matched.name.replace('.pdf', '').split('_');
@@ -80,15 +81,16 @@ module.exports = async function handler(req, res) {
     }
     else if (action === 'download') {
         const email = req.query.email.toLowerCase();
-        // Bedah Buku II menggunakan bucket 'sertifikat2', Bedah Buku I menggunakan bucket 'sertifikat'[cite: 8]
+        // Pengunduhan file peserta: jenis 2 ke bucket 'sertifikat2', jenis 1 ke bucket 'sertifikat'[cite: 12]
         const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';
 
         const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
             method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prefix: "" })
+            body: JSON.stringify({ prefix: "", limit: 100, offset: 0 })
         });
         const files = await listRes.json();
-        const matched = files.find(f => f.name && f.name.toLowerCase().includes(email));
+        const fileList = Array.isArray(files) ? files : (files.data || []);
+        const matched = fileList.find(f => f.name && f.name.toLowerCase().includes(email));
 
         if(matched && matched.name) {
             result = { success: true, url: `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${matched.name}`, message: "Sertifikat ditemukan!" };
@@ -150,3 +152,4 @@ module.exports = async function handler(req, res) {
   
   res.status(200).json(result);
 };
+```[cite: 12]
