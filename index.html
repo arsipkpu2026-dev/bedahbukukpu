@@ -7,6 +7,8 @@
   
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
   
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 
@@ -28,6 +30,8 @@
     .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.6); border-radius: 10px; }
     #pdf-loading { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; font-weight: bold; color: #3b82f6; }
+    .spinner { border: 4px solid rgba(59, 130, 246, 0.3); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3b82f6; animation: spin 1s linear infinite; margin-bottom: 8px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 
@@ -45,10 +49,12 @@
           <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-orange-600 tracking-tight drop-shadow-sm">KPU Kabupaten Labura</h1>
         </div>
         
+        <!-- BANTUAN & ADMIN NAV -->
         <div class="flex items-center gap-2">
           <button onclick="klikHubungiAdmin()" class="text-[10px] md:text-xs font-bold bg-slate-800 text-white px-4 py-2 rounded-xl shadow-md hover:bg-slate-700 active:scale-95 transition flex items-center gap-1.5" title="Pusat Bantuan">
              🎧 <span>Hubungi Admin</span>
           </button>
+          
           <button id="btn-login-nav" class="text-[10px] md:text-xs font-bold bg-white/50 text-slate-700 px-4 py-2 rounded-xl border border-slate-200/50 shadow-sm hover:bg-slate-50 active:scale-95 transition ml-1 md:ml-2">🛠️</button>
           <button id="btn-logout-nav" onclick="logoutAdmin()" class="hidden text-[10px] md:text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-xl border border-red-200 shadow-sm hover:bg-red-100 active:scale-95 transition">Logout</button>
         </div>
@@ -91,7 +97,7 @@
             </div>
           </div>
 
-          <div id="menu-buku2-card" onclick="validasiAksesFormLokal('buku2')" title="Sertifikat elektronik kegiatan Bedah Buku II sedang dalam tahap pemrosesan dan validasi." class="group relative bg-gradient-to-br from-cyan-600 to-blue-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-cyan-500/50 relative">
+          <div id="menu-buku2-card" onclick="validasiAksesFormLokal('buku2')" title="Sertifikat elektronik kegiatan Bedah Buku II sedang dalam tahap pemrosesan dan validasi. Dokumen baru dapat diakses dan diunduh melalui sistem paling cepat H+1 setelah kegiatan selesai dilaksanakan." class="group relative bg-gradient-to-br from-cyan-600 to-blue-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-cyan-500/50 relative">
             <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📘</div>
             <div class="relative z-10 flex flex-col gap-3">
               <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">📘</div>
@@ -136,7 +142,7 @@
         <form id="form-hadir" onsubmit="submitHadirTeks(event)" class="flex flex-col gap-4">
           <div><label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap (Boleh Pakai Gelar)</label><input type="text" id="h-nama" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
           <div><label class="block text-xs font-bold text-slate-600 mb-1">Instansi / Satker / Organisasi / Lainnya</label><input type="text" id="h-instansi" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
-          <div><label class="block text-xs font-bold text-slate-600 mb-1">Email Aktif</label><input type="email" id="h-email" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Email Aktif (Pastikan Email Anda Benar dan Penyimpanannya tidak penuh).</label><input type="email" id="h-email" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
           <div><label class="block text-xs font-bold text-slate-600 mb-1">Nomor HP</label>
             <input type="tel" pattern="[0-9]*" id="h-hp" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm" placeholder="Misal: 08123456789">
           </div>
@@ -203,19 +209,26 @@
                 <div>
                   <label class="block text-[10px] font-bold mb-1">Font</label>
                   <select id="font-family" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()">
-                    <option value="Arial">Arial</option><option value="Pacifico">Pacifico</option><option value="Poppins">Poppins</option><option value="Times">Times</option><option value="Courier">Courier New</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Pacifico">Pacifico</option>
+                    <option value="Poppins">Poppins</option>
+                    <option value="Times">Times</option>
+                    <option value="Courier">Courier New</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold mb-1">Style</label>
                   <select id="font-weight" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()">
-                    <option value="bold">Bold</option><option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                    <option value="normal">Normal</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold mb-1">Align</label>
                   <select id="font-align" class="w-full border p-2 rounded-xl text-sm" onchange="updateElementStyle()">
-                    <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
                   </select>
                 </div>
               </div>
@@ -224,6 +237,7 @@
                 <div id="pdf-loading">Memuat Template...</div>
                 <canvas id="cert-canvas"></canvas>
             </div>
+            <p class="text-[11px] font-mono bg-slate-800 text-green-400 p-3 rounded-xl border border-slate-700 shadow-inner" id="coord-info">Koordinat: X=0, Y=0</p>
             <button onclick="saveSetTemplate()" class="w-full bg-indigo-600 text-white font-bold py-3 mt-3 rounded-xl text-sm transition active:scale-95 shadow-md hover:bg-indigo-700">💾 Simpan Desain & Titik Koordinat ke Server</button>
           </div>
 
@@ -326,7 +340,7 @@
     document.getElementById("year").textContent = new Date().getFullYear();
 
     // DUA API URL YANG SUDAH DIPISAH TEGAS
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbywhc0xVWFv49ajom69cbEB1v-DoqUuADGfCfCoTSW3iwj-ZMPfyQn-QrGdJJAuo5Pb/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby4MCr_BukyzQ3bS7e7v20C2eY_cKbqL2EqXNMVHNGhc3M_NxBxxGq1oO9PdViWWvvZ/exec";
     const VERCEL_URL = "/api"; 
 
     const APP_CONFIG = {
@@ -369,11 +383,11 @@
             if (st.isOpen) {
                 navTo('hadir'); const infoDiv = document.getElementById('info-waktu-hadir');
                 let jejakHadir = localStorage.getItem('kpu_labura_hadir_v1'); let stempelHTML = '';
-                if (jejakHadir) stempelHTML = `<div class="bg-emerald-100 border border-emerald-400 text-emerald-800 p-4 rounded-xl mb-3 shadow-sm font-bold text-xs md:text-sm">Pendaftaran terakhir Anda:<br><span class="text-emerald-900 text-sm font-black">${jejakHadir}</span></div>`;
+                if (jejakHadir) stempelHTML = `<div class="bg-emerald-100 border border-emerald-400 text-emerald-800 p-4 rounded-xl mb-3 shadow-sm font-bold text-xs md:text-sm flex flex-col gap-3"><div class="flex items-start gap-2"><span>✅</span> <div>Pendaftaran terakhir di perangkat ini:<br><span class="text-emerald-900 text-sm md:text-base font-black">${jejakHadir}</span><br><span class="text-[10px] text-red-600 font-extrabold mt-1.5 block leading-tight">Silakan catat/ingat email di atas agar tidak lupa saat mencari sertifikat nanti.</span></div></div><button type="button" onclick="hapusJejakLokal()" class="bg-white border border-emerald-300 text-emerald-700 px-4 py-2 rounded-lg text-[10px] w-fit hover:bg-emerald-50 active:scale-95 transition shadow-sm font-extrabold">Daftarkan Peserta Lain</button></div>`;
                 if(APP_CONFIG.hadir.start || APP_CONFIG.hadir.end) {
                     let strMulai = APP_CONFIG.hadir.start ? new Date(APP_CONFIG.hadir.start).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Kapan saja';
                     let strSelesai = APP_CONFIG.hadir.end ? new Date(APP_CONFIG.hadir.end).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Tidak Terbatas';
-                    infoDiv.style.display = 'block'; infoDiv.innerHTML = stempelHTML + `📌 <b>Jadwal:</b> Dibuka: <b>${strMulai}</b> | Ditutup: <b>${strSelesai}</b>`;
+                    infoDiv.style.display = 'block'; infoDiv.innerHTML = stempelHTML + `📌 <b>Jadwal Pendaftaran:</b><br>Dibuka: <b>${strMulai}</b><br>Ditutup: <b>${strSelesai}</b>`;
                 } else { if(stempelHTML) { infoDiv.style.display = 'block'; infoDiv.innerHTML = stempelHTML; } else { infoDiv.style.display = 'none'; } }
             } else { Swal.fire({title:'Ditutup', text:st.message, icon:'warning', heightAuto:false}); }
         } else if (fitur === 'buku2') {
@@ -381,21 +395,32 @@
         }
     }
 
+    function hapusJejakLokal() { localStorage.removeItem('kpu_labura_hadir_v1'); validasiAksesFormLokal('hadir'); }
+
     function klikHubungiAdmin() {
+        let waConfig = APP_CONFIG.bantuan.wa; let emailConfig = APP_CONFIG.bantuan.email;
+        if(!waConfig && !emailConfig) return Swal.fire({ icon: 'info', title: 'Informasi', text: 'Layanan bantuan tidak tersedia saat ini.', heightAuto: false, customClass: { popup: 'rounded-[1.5rem]' }});
+        let phone = waConfig ? waConfig.replace(/\D/g, '') : '';
+        if (phone.startsWith('0')) phone = '62' + phone.substring(1); else if (phone.startsWith('8')) phone = '62' + phone;
+        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let emailLink = isMobile ? `mailto:${emailConfig}` : `https://mail.google.com/mail/?view=cm&fs=1&to=${emailConfig}`;
+        let waButtonHtml = waConfig ? `<a href="https://wa.me/${phone}" target="_blank" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-green-600 active:scale-95 text-center flex items-center justify-center gap-2">💬 Hubungi via WhatsApp</a>` : '';
+        let emailButtonHtml = emailConfig ? `<a href="${emailLink}" target="_blank" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-blue-600 active:scale-95 text-center flex items-center justify-center gap-2">📧 Hubungi via Email</a>` : '';
         Swal.fire({
             title: 'Pusat Bantuan',
-            html: `<p>Khusus pembuatan <b>Sertifikat</b>, proses akan dilakukan <b>setelah acara selesai</b>.</p>`,
+            html: `<div class="text-left text-xs md:text-sm text-slate-700 mb-5 bg-amber-50 p-4 rounded-xl border border-amber-200 leading-relaxed shadow-inner"><p class="font-extrabold text-amber-900 mb-1">📌 Catatan Penting:</p><p class="mb-2">Khusus pembuatan <b>Sertifikat</b>, proses akan dilakukan <b>setelah acara selesai</b>. Harap bersabar menunggu karena validasi dan penerapan TTE (Tanda Tangan Elektronik) dikerjakan satu per satu.</p><p>Jika terdapat kesalahan penulisan nama atau email pada saat mengisi daftar hadir, silakan laporkan melalui kontak di bawah.</p></div><div class="flex flex-col gap-3 mt-2">${waButtonHtml}${emailButtonHtml}</div>`,
             showConfirmButton: false, showCloseButton: true, heightAuto: false, customClass: { popup: 'rounded-[2rem] shadow-2xl' }
         });
     }
 
-    function showLoading(title = 'Memproses...') { Swal.fire({ title: title, showConfirmButton: false, allowOutsideClick: false, allowEscapeKey: false, heightAuto: false, customClass: { popup: 'rounded-[2rem]' } }); }
+    function showLoading(title = 'Memproses...') { Swal.fire({ title: title, html: `<div class="flex flex-col items-center p-3"><img src="https://upload.wikimedia.org/wikipedia/commons/4/46/KPU_Logo.svg" class="w-16 h-16 animate-bounce my-2 drop-shadow-md"><p class="text-xs text-slate-500 font-bold mt-2">Mohon tunggu...</p></div>`, showConfirmButton: false, allowOutsideClick: false, allowEscapeKey: false, heightAuto: false, customClass: { popup: 'rounded-[2rem] shadow-2xl' } }); }
+    function formatUrl(url) { return /^https?:\/\//i.test(url.trim()) ? url.trim() : 'https://' + url.trim(); }
+    function copyTxt(text) { navigator.clipboard.writeText(text).then(() => Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Tersalin!', heightAuto: false })); }
 
     // =========================================================
-    // ROUTER: Pisahkan API yang memanggil Google Script vs Vercel
+    // ROUTER UTAMA: Pisahkan API Vercel dan Google Apps Script
     // =========================================================
     async function fetchAPI(action, params = {}, method = 'GET', retries = 2) {
-      // DAFTAR AKSI YANG HARUS LARI KE GOOGLE APPS SCRIPT (DRIVE & GMAIL)
       const listAksiGAS = ['download', 'cariEmail', 'simpanPdf', 'kirimEmailNotif'];
       const isGAS = listAksiGAS.includes(action);
       
@@ -408,7 +433,6 @@
           for (let key in params) url += `&${key}=${encodeURIComponent(params[key])}`; 
       } else { 
           options.body = JSON.stringify({ action: action, ...params }); 
-          // GAS lebih bersahabat dengan tipe text/plain saat POST CORS
           options.headers = { 'Content-Type': isGAS ? 'text/plain;charset=utf-8' : 'application/json' }; 
       }
       
@@ -442,14 +466,54 @@
       navTo('agenda'); document.getElementById('list-agenda-user').innerHTML = '<p class="text-center text-sm py-4 col-span-2">Memuat...</p>';
       const res = await fetchAPI('getAgenda');
       if (!res.data || res.data.length === 0) return document.getElementById('list-agenda-user').innerHTML = '<div class="bg-slate-50 p-6 rounded-xl text-center col-span-2"><p class="text-sm font-medium">Belum ada agenda.</p></div>';
-      let html = ''; res.data.forEach(row => { html += `<div class="bg-slate-50 p-5 rounded-2xl border"><h3 class="font-bold">${row[1]}</h3></div>`; }); document.getElementById('list-agenda-user').innerHTML = html;
+      
+      let html = '';
+      res.data.forEach(row => {
+        const waktuStart = new Date(row[2]); const strStart = waktuStart.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+        const waktuEnd = row[8] ? new Date(row[8]) : new Date(waktuStart.getTime() + (3 * 60 * 60 * 1000)); 
+        const strEnd = waktuEnd.toLocaleTimeString('id-ID', { timeStyle: 'short' });
+        const now = new Date().getTime(); const startMs = waktuStart.getTime(); const endMs = waktuEnd.getTime();
+        
+        let statusBadge = ''; let opacityStyle = ''; let watermark = '';
+        if (now < startMs) { 
+            statusBadge = `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase ml-2 animate-pulse shadow-sm border border-blue-200">⏳ Segera</span>`; 
+        } else if (now >= startMs && now <= endMs) { 
+            statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase ml-2 animate-pulse shadow-sm border border-green-200">🟢 Berlangsung</span>`; 
+        } else { 
+            statusBadge = `<span class="bg-slate-200 text-slate-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase ml-2 shadow-sm border border-slate-300">🏁 Berakhir</span>`; 
+            opacityStyle = 'opacity: 0.7; pointer-events: none; filter: grayscale(80%);';
+            watermark = `<div class='absolute inset-0 flex items-center justify-center z-20 overflow-hidden pointer-events-none'><div class='text-2xl md:text-4xl font-black text-slate-800/40 border-2 border-slate-800/40 rounded-xl px-4 py-2 rotate-[-20deg] select-none'>CLOSED</div></div>`;
+        }
+        
+        let infoSection = '';
+        if(row[4] || row[5] || row[6] || row[7]) {
+          infoSection = `<div class="mt-4 bg-white p-4 rounded-xl border border-slate-200 flex flex-col gap-3 shadow-sm relative z-10">`;
+          if(row[5] || row[6]) {
+            infoSection += `<div class="grid grid-cols-1 gap-3 text-xs">`;
+            if(row[5]) infoSection += `<div><span class="text-slate-500 block text-[10px] uppercase font-bold mb-1">Meeting ID</span><div class="flex justify-between items-center bg-slate-50 border border-slate-200 p-2 rounded-lg"><span class="font-mono font-bold text-slate-800">${row[5]}</span><button onclick="copyTxt('${row[5]}')" class="text-slate-400 hover:text-blue-600 transition pointer-events-auto" title="Copy">📋</button></div></div>`;
+            if(row[6]) infoSection += `<div><span class="text-slate-500 block text-[10px] uppercase font-bold mb-1">Passcode</span><div class="flex justify-between items-center bg-slate-50 border border-slate-200 p-2 rounded-lg"><span class="font-mono font-bold text-slate-800">${row[6]}</span><button onclick="copyTxt('${row[6]}')" class="text-slate-400 hover:text-blue-600 transition pointer-events-auto" title="Copy">📋</button></div></div>`;
+            infoSection += `</div>`;
+          }
+          if(row[4] || row[7]) {
+            infoSection += `<div class="flex flex-col sm:flex-row gap-2 mt-2">`;
+            if(row[4]) infoSection += `<a href="${formatUrl(row[4])}" target="_blank" class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-md text-center transition pointer-events-auto">🌐 Buka Tautan</a>`;
+            if(row[7]) infoSection += `<a href="${formatUrl(row[7])}" target="_blank" class="flex-1 bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-100 text-center transition pointer-events-auto">🖼️ Background</a>`;
+            infoSection += `</div>`;
+          }
+          infoSection += `</div>`;
+        }
+        html += `<div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden" style="${opacityStyle}">${watermark}<div class="flex flex-col gap-1 relative z-10"><span class="bg-indigo-100 text-indigo-700 w-fit px-2 py-0.5 rounded-md text-[9px] font-bold uppercase">${row[3]}</span><h3 class="font-extrabold text-base mt-1">${row[1]}</h3><p class="text-[11px] text-slate-600 font-medium flex items-center flex-wrap gap-y-1">🗓️ ${strStart} - ${strEnd} WIB ${statusBadge}</p></div>${infoSection}</div>`;
+      });
+      document.getElementById('list-agenda-user').innerHTML = html;
     }
 
     async function navToEbook() {
       navTo('ebook'); document.getElementById('list-ebook-user').innerHTML = '<p class="col-span-1 sm:col-span-2 text-center text-sm py-4">Memuat...</p>';
       const res = await fetchAPI('getEbook');
-      if (!res.data || res.data.length === 0) return document.getElementById('list-ebook-user').innerHTML = '<div class="bg-slate-50 p-6 rounded-xl text-center"><p class="text-sm font-medium">Belum ada materi.</p></div>';
-      let html = ''; res.data.forEach(row => { html += `<div class="bg-purple-50 p-5 rounded-2xl border"><h3 class="font-bold">${row[1]}</h3></div>`; }); document.getElementById('list-ebook-user').innerHTML = html;
+      if (!res.data || res.data.length === 0) return document.getElementById('list-ebook-user').innerHTML = '<div class="col-span-1 sm:col-span-2 bg-slate-50 p-6 rounded-xl text-center"><p class="text-sm font-medium">Belum ada materi.</p></div>';
+      let html = '';
+      res.data.forEach(row => { html += `<div class="bg-purple-50 p-5 rounded-2xl border border-purple-200 shadow-sm hover:-translate-y-1 transition"><h3 class="font-extrabold text-purple-900 text-base">${row[1]}</h3><p class="text-[11px] text-purple-700 mt-1 mb-3 line-clamp-2">${row[2] || '-'}</p><a href="${formatUrl(row[3])}" target="_blank" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold inline-block w-full text-center shadow-md">Unduh File</a></div>`; });
+      document.getElementById('list-ebook-user').innerHTML = html;
     }
 
     async function submitHadirTeks(e) {
@@ -460,10 +524,11 @@
       const inputNama = document.getElementById('h-nama').value.trim(); const inputEmail = document.getElementById('h-email').value.toLowerCase().trim();
       showLoading('Mendaftarkan Kehadiran...');
       const dataText = [ inputNama, document.getElementById('h-instansi').value, inputEmail, document.getElementById('h-hp').value, document.getElementById('h-auto-email').checked ];
-      const resTeks = await fetchAPI('hadirTeks', { data: dataText }, 'POST'); // -> Lari ke Vercel Supabase
+      const resTeks = await fetchAPI('hadirTeks', { data: dataText }, 'POST');
       
       if (resTeks.success) { 
-          localStorage.setItem('kpu_labura_hadir_v1', `${inputNama} | ${inputEmail}`);
+          const waktuSekarang = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+          localStorage.setItem('kpu_labura_hadir_v1', `${inputNama} | ${inputEmail} (${waktuSekarang} WIB)`);
           document.getElementById('form-hadir').reset(); navTo('home'); 
           Swal.fire({title:'Berhasil!', text:resTeks.message, icon:'success', heightAuto:false}); 
       } else { Swal.fire({title:'Gagal', text:resTeks.message, icon:'warning', heightAuto:false}); }
@@ -471,16 +536,16 @@
 
     async function cariEmailLupa() {
         const inputNama = document.getElementById('d-nama').value.trim();
-        if(!inputNama || inputNama.length < 3) return Swal.fire({icon: 'warning', title: 'Perhatian', text: 'Ketik nama Anda di kolom atas terlebih dahulu.', heightAuto: false});
+        if(!inputNama || inputNama.length < 3) return Swal.fire({icon: 'warning', title: 'Perhatian', text: 'Ketik nama Anda di kolom atas terlebih dahulu (Misalnya: "John Doe", Bisa ketik John atau keseluruhan nama).', heightAuto: false});
         showLoading('Mencari Email...');
-        const res = await fetchAPI('cariEmail', { nama: inputNama, jenis: currentDownloadType }, 'GET'); // -> Lari ke GAS
-        if(res.success) { Swal.fire({ icon: 'success', title: 'Ditemukan!', html: `Sistem menemukan email:<br><b class="text-xl bg-blue-50 px-4 py-2 my-2">${res.email}</b>`, heightAuto: false }); } 
+        const res = await fetchAPI('cariEmail', { nama: inputNama, jenis: currentDownloadType }, 'GET');
+        if(res.success) { Swal.fire({ icon: 'success', title: 'Ditemukan!', html: `Sistem menemukan email yang cocok dengan nama tersebut:<br><br><b class="text-xl text-blue-700 tracking-wide bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 inline-block my-2">${res.email}</b><br><br><p class="text-xs text-red-600 font-bold mt-2">Silakan ingat-ingat dan KETIK SECARA LENGKAP email tersebut di kolom pencarian untuk mengunduh sertifikat.</p>`, heightAuto: false }); } 
         else { Swal.fire({icon: 'error', title: 'Tidak Ditemukan', text: res.message, heightAuto: false}); }
     }
 
     async function submitDownload(e) {
       e.preventDefault(); showLoading('Mencari...');
-      const res = await fetchAPI('download', { nama: document.getElementById('d-nama').value, email: document.getElementById('d-email').value, jenis: currentDownloadType }, 'GET'); // -> Lari ke GAS
+      const res = await fetchAPI('download', { nama: document.getElementById('d-nama').value, email: document.getElementById('d-email').value, jenis: currentDownloadType }, 'GET');
       if (res.success) Swal.fire({ title: 'Ditemukan!', text: res.message, icon: 'success', confirmButtonText: 'Unduh', heightAuto: false }).then((r) => { if (r.isConfirmed) window.open(res.url, '_blank'); });
       else Swal.fire({title:'Gagal', text:res.message, icon:'warning', heightAuto:false});
     }
@@ -504,17 +569,37 @@
       }
     }
     function muatKonfigurasiTerakhir() {
-        if(!savedTemplateConfig) return Swal.fire({title:'Info', text:'Belum ada pengaturan template.', icon:'info', heightAuto:false});
+        if(!savedTemplateConfig) return Swal.fire({title:'Info', text:'Belum ada pengaturan template yang tersimpan di server.', icon:'info', heightAuto:false});
         try { els = JSON.parse(savedTemplateConfig); localStorage.setItem('localTemplateConfig', savedTemplateConfig); changeCanvasElement(); previewCanvas(); Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Dimuat!'}); } catch(e){}
     }
 
     async function saveSetUmum() { showLoading('Menyimpan...'); const res = await fetchAPI('simpanSetUmum', { kode: document.getElementById('s-kode').value }, 'POST'); if(res.success) Swal.fire({title:'Tersimpan', text:'', icon:'success', heightAuto:false}); }
     async function saveSetTemplate() { showLoading('Menyimpan...'); const currentConfigStr = JSON.stringify(els); const res = await fetchAPI('simpanSetTemplate', { templateConfig: currentConfigStr }, 'POST'); if(res.success) { savedTemplateConfig = currentConfigStr; localStorage.removeItem('localTemplateConfig'); Swal.fire({title:'Tersimpan', text:'', icon:'success', heightAuto:false}); } }
+    async function changePassword() { showLoading('Memproses...'); const res = await fetchAPI('ubahPass', { oldPass: document.getElementById('p-old').value, newPass: document.getElementById('p-new').value }, 'POST'); if(res.success) Swal.fire({title:'Berhasil', text:'', icon:'success', heightAuto:false}); else Swal.fire({title:'Gagal', text:res.message, icon:'error', heightAuto:false}); }
 
-    async function loadAgendaAdmin() { /* Kode table agenda */ }
-    async function submitAgendaAdmin(e) { e.preventDefault(); showLoading('Menyimpan...'); await fetchAPI('addAgenda', { data: [document.getElementById('a-judul').value, document.getElementById('a-waktu').value, document.getElementById('a-platform').value, document.getElementById('a-link').value, document.getElementById('a-id').value, document.getElementById('a-pass').value, document.getElementById('a-bg').value, document.getElementById('a-waktu-selesai').value] }, 'POST'); Swal.close(); document.getElementById('form-agenda').reset(); loadAgendaAdmin(); }
-    async function loadEbookAdmin() { /* Kode table ebook */ }
-    async function submitEbookAdmin(e) { e.preventDefault(); showLoading('Menyimpan...'); await fetchAPI('addEbook', { data: [document.getElementById('e-judul').value, document.getElementById('e-desc').value, document.getElementById('e-link').value] }, 'POST'); Swal.close(); document.getElementById('form-ebook').reset(); loadEbookAdmin(); }
+    async function loadAgendaAdmin() {
+      document.getElementById('table-agenda-admin').innerHTML = '<tr><td colspan="3" class="p-2 text-center">Memuat...</td></tr>';
+      const res = await fetchAPI('getAgenda');
+      if (!res.data || res.data.length === 0) return document.getElementById('table-agenda-admin').innerHTML = '<tr><td colspan="3" class="text-center p-2">Kosong</td></tr>';
+      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2">${new Date(row[2]).toLocaleString()}</td><td class="p-2"><button type="button" onclick="delAgenda('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
+      document.getElementById('table-agenda-admin').innerHTML = html;
+    }
+    async function submitAgendaAdmin(e) {
+      e.preventDefault(); showLoading('Menyimpan...'); await fetchAPI('addAgenda', { data: [document.getElementById('a-judul').value, document.getElementById('a-waktu').value, document.getElementById('a-platform').value, document.getElementById('a-link').value, document.getElementById('a-id').value, document.getElementById('a-pass').value, document.getElementById('a-bg').value, document.getElementById('a-waktu-selesai').value] }, 'POST'); Swal.close(); document.getElementById('form-agenda').reset(); loadAgendaAdmin();
+    }
+    async function delAgenda(id) { if(!confirm("Hapus?")) return; showLoading('Menghapus...'); await fetchAPI('delAgenda', { id: id }, 'POST'); loadAgendaAdmin(); Swal.close(); }
+
+    async function loadEbookAdmin() {
+      document.getElementById('table-ebook-admin').innerHTML = '<tr><td colspan="2" class="p-2 text-center">Memuat...</td></tr>';
+      const res = await fetchAPI('getEbook');
+      if (!res.data || res.data.length === 0) return document.getElementById('table-ebook-admin').innerHTML = '<tr><td colspan="2" class="text-center p-2">Kosong</td></tr>';
+      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2"><button type="button" onclick="delEbook('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
+      document.getElementById('table-ebook-admin').innerHTML = html;
+    }
+    async function submitEbookAdmin(e) {
+      e.preventDefault(); showLoading('Menyimpan...'); await fetchAPI('addEbook', { data: [document.getElementById('e-judul').value, document.getElementById('e-desc').value, document.getElementById('e-link').value] }, 'POST'); Swal.close(); document.getElementById('form-ebook').reset(); loadEbookAdmin();
+    }
+    async function delEbook(id) { if(!confirm("Hapus E-Book?")) return; showLoading('Menghapus...'); await fetchAPI('delEbook', { id: id }, 'POST'); loadEbookAdmin(); Swal.close(); }
 
     const canvas = document.getElementById('cert-canvas'); const ctx = canvas.getContext('2d');
     let basePdfBytes = null; let templateImg = new Image(); let templateType = 'none'; 
@@ -545,6 +630,14 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height); 
       if (templateType === 'image' || templateType === 'pdf-preview') { ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height); } 
       else return;
+      
+      if (isDragging && (window.snapGuideX !== null || window.snapGuideY !== null)) {
+          ctx.save(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; 
+          if (window.snapGuideX !== null) { ctx.moveTo(window.snapGuideX, 0); ctx.lineTo(window.snapGuideX, canvas.height); }
+          if (window.snapGuideY !== null) { ctx.moveTo(0, window.snapGuideY); ctx.lineTo(canvas.width, window.snapGuideY); }
+          ctx.stroke(); ctx.restore();
+      }
+
       Object.keys(els).forEach(key => {
         let el = els[key]; let isAct = (key === activeEl);
         ctx.strokeStyle = isAct ? "rgba(239, 68, 68, 0.9)" : "rgba(100, 116, 139, 0.4)"; ctx.lineWidth = isAct ? 4 : 2; if(isAct) ctx.setLineDash([]); else ctx.setLineDash([5, 5]);
@@ -553,18 +646,31 @@
         let weightStr = (el.weight === 'normal') ? 'normal' : 'bold'; ctx.font = `${weightStr} ${el.size}px ${fontStr}`; ctx.fillStyle = isAct ? "#000" : "#475569"; ctx.textBaseline = "middle";
         let textX = el.align === 'center' ? el.x + (el.w / 2) : (el.align === 'right' ? el.x + el.w : el.x);
         ctx.textAlign = el.align; ctx.fillText(el.text, textX, el.y + (el.h / 2));
+        if (isAct) {
+            document.getElementById('coord-info').textContent = `[${key.toUpperCase()}] Posisi: X=${Math.round(textX)}, Y=${Math.round(el.y + (el.h / 2))}, Ukuran=${el.size}px`;
+            document.getElementById('coord-x').value = Math.round(el.x);
+            document.getElementById('coord-y').value = Math.round(el.y);
+        }
       });
     }
 
     function handleStart(e) { isDragging = true; updateRect(e); } 
     function handleMove(e) { if (isDragging) { updateRect(e); e.preventDefault(); } } 
-    function handleEnd() { isDragging = false; saveLocalConfig(); previewCanvas(); }
+    function handleEnd() { isDragging = false; window.snapGuideX = null; window.snapGuideY = null; saveLocalConfig(); previewCanvas(); }
     canvas.addEventListener('mousedown', handleStart); canvas.addEventListener('mousemove', handleMove); canvas.addEventListener('mouseup', handleEnd);
     canvas.addEventListener('touchstart', handleStart, {passive: false}); canvas.addEventListener('touchmove', handleMove, {passive: false}); canvas.addEventListener('touchend', handleEnd);
+    
     function updateRect(e) {
       if(templateType === 'none') return; const cssRect = canvas.getBoundingClientRect(), clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const scaleX = canvas.width / cssRect.width, scaleY = canvas.height / cssRect.height;
       let targetX = (clientX - cssRect.left) * scaleX; let targetY = (clientY - cssRect.top) * scaleY; 
+      const snapThreshold = 15; window.snapGuideX = null; window.snapGuideY = null;
+      let w = els[activeEl].w; let h = els[activeEl].h; let centerX = targetX + w / 2; let centerY = targetY + h / 2;
+      let canvasCenterX = canvas.width / 2; let canvasCenterY = canvas.height / 2;
+      let otherElKey = activeEl === 'nama' ? 'nomor' : 'nama'; let otherEl = els[otherElKey];
+      let otherCenterX = otherEl.x + otherEl.w / 2; let otherLeft = otherEl.x; let otherCenterY = otherEl.y + otherEl.h / 2; let otherTop = otherEl.y; let otherBottom = otherEl.y + otherEl.h;
+      if (Math.abs(centerX - canvasCenterX) < snapThreshold) { targetX = canvasCenterX - w / 2; window.snapGuideX = canvasCenterX; } else if (Math.abs(centerX - otherCenterX) < snapThreshold) { targetX = otherCenterX - w / 2; window.snapGuideX = otherCenterX; } else if (Math.abs(targetX - otherLeft) < snapThreshold) { targetX = otherLeft; window.snapGuideX = otherLeft; }
+      if (Math.abs(centerY - canvasCenterY) < snapThreshold) { targetY = canvasCenterY - h / 2; window.snapGuideY = canvasCenterY; } else if (Math.abs(centerY - otherCenterY) < snapThreshold) { targetY = otherCenterY - h / 2; window.snapGuideY = otherCenterY; } else if (Math.abs(targetY - otherTop) < snapThreshold) { targetY = otherTop; window.snapGuideY = otherTop; } else if (Math.abs(targetY + h - otherBottom) < snapThreshold) { targetY = otherBottom - h; window.snapGuideY = otherBottom; }
       els[activeEl].x = targetX; els[activeEl].y = targetY; previewCanvas();
     }
 
@@ -576,11 +682,13 @@
         if (!dbPeserta || dbPeserta.length === 0) return document.getElementById('table-peserta').innerHTML = '<tr><td colspan="3" class="text-center p-6 font-medium text-slate-500">Kosong</td></tr>'; 
         let html = '';
         dbPeserta.forEach((row, i) => { 
+          let hpRaw = row[4] ? row[4].toString().replace(/\D/g, '') : '';
+          let txtHp = hpRaw ? `📞 +${hpRaw}` : '📞 -';
           let emailFlags = `Minta Email: ${row[5] === "Ya" ? "Ya" : "-"} | Notif: <span class="${row[6]==='Terkirim'?'text-green-600 font-bold':''}">${row[6] || 'Belum'}</span>`;
-          html += `<tr class="border-b row-peserta"><td class="p-3"><input type="checkbox" class="chk-peserta rounded" value="${i}"></td><td class="p-3 font-bold text-slate-600">${i+1}</td><td class="p-3"><p class="font-bold text-slate-800 search-target">${row[1]}</p><div class="text-[10px] text-slate-500 search-target">${row[3]}<br>${emailFlags}</div></td></tr>`; 
+          html += `<tr class="border-b hover:bg-slate-50 transition row-peserta"><td class="p-3"><input type="checkbox" class="chk-peserta rounded w-4 h-4 text-blue-600" value="${i}"></td><td class="p-3 text-center font-bold text-slate-600">${i+1}</td><td class="p-3"><p class="font-bold text-slate-800 search-target">${row[1]}</p><div class="text-[10px] font-normal text-slate-500 mt-1 search-target">${row[3]}<br>${txtHp}<br>${emailFlags}</div></td></tr>`; 
         });
         document.getElementById('table-peserta').innerHTML = html;
-      } catch (e) { document.getElementById('table-peserta').innerHTML = `<tr><td colspan="3" class="text-center text-red-500 font-bold">Error.</td></tr>`; }
+      } catch (e) { document.getElementById('table-peserta').innerHTML = `<tr><td colspan="3" class="text-center p-6 text-red-500 font-bold">Error.</td></tr>`; }
     }
     
     function toggleCheckAll() { const isChecked = document.getElementById('check-all').checked; document.querySelectorAll('.chk-peserta').forEach(el => el.checked = isChecked); }
@@ -603,14 +711,15 @@
       showLoading(`Mengunduh Font...`);
       for (let key of Object.keys(els)) { let fName = els[key].font; if(fName !== 'Arial' && fName !== 'Times' && fName !== 'Courier') await getCustomFontData(fName); }
 
+      showLoading(`Memproses 0 dari ${checks.length}`);
       let successCount = 0;
+      
       if (basePdfBytes) {
           const { PDFDocument, rgb } = PDFLib;
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], fileName = `${nama}_${email}.pdf`;
             let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 1) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); let nomorSertifikat = "Nomor : " + rawNomor;
             
-            // UI Loader Update
             document.querySelector('.swal2-title').innerHTML = `Memproses ${i+1}/${checks.length}<br><small>${nama}</small>`;
             
             try {
@@ -619,24 +728,45 @@
                 for (let key of Object.keys(els)) { let fName = els[key].font; if(fName !== 'Arial' && fName !== 'Times' && fName !== 'Courier' && fontCacheBuffer[fName] && !pdfCustomFonts[fName]) pdfCustomFonts[fName] = await pdfDoc.embedFont(fontCacheBuffer[fName]); }
                 const firstPage = pdfDoc.getPages()[0]; const { width, height } = firstPage.getSize(); const scaleX = width / canvas.width, scaleY = height / canvas.height;
                 let isNamaBold = els.nama.weight !== 'normal'; let fNama = undefined;
-                if(els.nama.font === 'Arial') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); else if(pdfCustomFonts[els.nama.font]) fNama = pdfCustomFonts[els.nama.font]; else fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); 
+                if(els.nama.font === 'Arial') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); else if(els.nama.font === 'Times') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.TimesRomanBold : PDFLib.StandardFonts.TimesRoman); else if(els.nama.font === 'Courier') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.CourierBold : PDFLib.StandardFonts.Courier); else if(pdfCustomFonts[els.nama.font]) fNama = pdfCustomFonts[els.nama.font]; else fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); 
                 let textW_nama = fNama.widthOfTextAtSize(nama, els.nama.size * scaleY); let nx = els.nama.x * scaleX; if (els.nama.align === 'center') nx = nx + ((els.nama.w * scaleX) / 2) - (textW_nama / 2); else if (els.nama.align === 'right') nx = nx + (els.nama.w * scaleX) - textW_nama;
                 let yOffsetNama = (els.nama.size * scaleY) * 0.35; firstPage.drawText(nama, { x: nx, y: height - ((els.nama.y + (els.nama.h/2)) * scaleY) - yOffsetNama, size: els.nama.size * scaleY, font: fNama, color: rgb(0, 0, 0) }); 
 
                 let isNomorBold = els.nomor.weight !== 'normal'; let fNomor = undefined;
-                if(els.nomor.font === 'Arial') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); else if(pdfCustomFonts[els.nomor.font]) fNomor = pdfCustomFonts[els.nomor.font]; else fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica);
+                if(els.nomor.font === 'Arial') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); else if(els.nomor.font === 'Times') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.TimesRomanBold : PDFLib.StandardFonts.TimesRoman); else if(els.nomor.font === 'Courier') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.CourierBold : PDFLib.StandardFonts.Courier); else if(pdfCustomFonts[els.nomor.font]) fNomor = pdfCustomFonts[els.nomor.font]; else fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica);
                 let textW_nomor = fNomor.widthOfTextAtSize(nomorSertifikat, els.nomor.size * scaleY); let nox = els.nomor.x * scaleX; if (els.nomor.align === 'center') nox = nox + ((els.nomor.w * scaleX) / 2) - (textW_nomor / 2); else if (els.nomor.align === 'right') nox = nox + (els.nomor.w * scaleX) - textW_nomor;
                 let yOffsetNomor = (els.nomor.size * scaleY) * 0.35; firstPage.drawText(nomorSertifikat, { x: nox, y: height - ((els.nomor.y + (els.nomor.h/2)) * scaleY) - yOffsetNomor, size: els.nomor.size * scaleY, font: fNomor, color: rgb(0, 0, 0) });
 
                 const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
                 
-                // MENGIRIM FILE LANGSUNG KE GOOGLE APPS SCRIPT (DRIVE)
+                // MENGIRIM FILE KE GOOGLE DRIVE
                 const res = await fetchAPI('simpanPdf', { base64Data: pdfBytes, filename: fileName, jenis: currentDownloadType }, 'POST', 0);
                 if(res.success) successCount++;
 
-                // JEDA 1.5 DETIK AGAR SERVER GOOGLE TIDAK ERROR (RATE LIMIT)
+                // JEDA 1.5 DETIK AGAR GOOGLE TIDAK ERROR RATE LIMIT
                 await new Promise(r => setTimeout(r, 1500));
 
+            } catch (err) {}
+          }
+      } else if (templateImg.src) {
+          const orientation = canvas.width > canvas.height ? 'l' : 'p';
+          for (let i = 0; i < checks.length; i++) {
+            let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], fileName = `${nama}_${email}.pdf`;
+            let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 1) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); let nomorSertifikat = "Nomor : " + rawNomor;
+            document.querySelector('.swal2-title').innerHTML = `Memproses ${i+1}/${checks.length}<br><small>${nama}</small>`;
+            const pdf = new window.jspdf.jsPDF({ orientation: orientation, unit: 'px', format: [canvas.width, canvas.height] });
+            for (let key of Object.keys(els)) { let fName = els[key].font; if(fName !== 'Arial' && fName !== 'Times' && fName !== 'Courier' && fontCacheBuffer[fName]) { pdf.addFileToVFS(`${fName}.ttf`, fontCacheBase64[fName]); pdf.addFont(`${fName}.ttf`, fName, 'normal'); } }
+            pdf.addImage(templateImg.src, 'JPEG', 0, 0, canvas.width, canvas.height);
+            let nx = els.nama.align === 'center' ? els.nama.x + els.nama.w/2 : (els.nama.align === 'right' ? els.nama.x + els.nama.w : els.nama.x); let wNama = els.nama.weight === 'normal' ? 'normal' : 'bold';
+            if(els.nama.font === 'Arial') pdf.setFont("helvetica", wNama); else if(els.nama.font === 'Times') pdf.setFont("times", wNama); else if(els.nama.font === 'Courier') pdf.setFont("courier", wNama); else pdf.setFont(els.nama.font, "normal");
+            pdf.setFontSize(els.nama.size); pdf.setTextColor(0, 0, 0); pdf.text(nama, nx, els.nama.y + (els.nama.h/2), { align: els.nama.align, baseline: 'middle' });
+            let nox = els.nomor.align === 'center' ? els.nomor.x + els.nomor.w/2 : (els.nomor.align === 'right' ? els.nomor.x + els.nomor.w : els.nomor.x); let wNomor = els.nomor.weight === 'normal' ? 'normal' : 'bold';
+            if(els.nomor.font === 'Arial') pdf.setFont("helvetica", wNomor); else if(els.nomor.font === 'Times') pdf.setFont("times", wNomor); else if(els.nomor.font === 'Courier') pdf.setFont("courier", wNomor); else pdf.setFont(els.nomor.font, "normal");
+            pdf.setFontSize(els.nomor.size); pdf.text(nomorSertifikat, nox, els.nomor.y + (els.nomor.h/2), { align: els.nomor.align, baseline: 'middle' });
+            try { 
+                const res = await fetchAPI('simpanPdf', { base64Data: pdf.output('datauristring'), filename: fileName, jenis: currentDownloadType }, 'POST', 0); 
+                if(res.success) successCount++; 
+                await new Promise(r => setTimeout(r, 1500));
             } catch (err) {}
           }
       }
@@ -656,16 +786,12 @@
                 let pIndex = checks[i].value, namaPeserta = dbPeserta[pIndex][1], emailTarget = dbPeserta[pIndex][3];
                 document.querySelector('.swal2-title').innerHTML = `Mengirim Email ${i+1}/${checks.length}<br><small>${namaPeserta}</small>`;
                 
-                // 1. Suruh Google Apps Script mengirim Email
                 const resEmail = await fetchAPI('kirimEmailNotif', { email: emailTarget, nama: namaPeserta }, 'POST', 0);
-                
-                // 2. Suruh Vercel Update Status Database
                 if(resEmail.success) {
                    await fetchAPI('updateStatusEmail', { email: emailTarget }, 'POST', 0);
                    successCount++;
                 }
-
-                // Jeda 1 detik agar Gmail tidak mengira ini Spam bot
+                // Jeda 1 detik agar Gmail aman
                 await new Promise(r => setTimeout(r, 1000));
             }
             Swal.fire({title:'Selesai!', text:`Berhasil mengirim email ke ${successCount} peserta.`, icon:'success', heightAuto:false}); loadDataPeserta();
