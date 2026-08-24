@@ -10,12 +10,7 @@ async function dbQuery(method, table, queryParams = "", body = null) {
   const url = `${SUPABASE_URL}/rest/v1/${table}${queryParams}`;
   const options = {
     method: method,
-    headers: { 
-        'apikey': SUPABASE_KEY, 
-        'Authorization': `Bearer ${SUPABASE_KEY}`, 
-        'Content-Type': 'application/json', 
-        'Prefer': 'return=representation' 
-    }
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }
   };
   if (body) options.body = JSON.stringify(body);
   const res = await fetch(url, options);
@@ -98,7 +93,7 @@ module.exports = async function handler(req, res) {
         await dbQuery('DELETE', 'ebook', `?id=eq.${parsedBody.id}`); result = { success: true };
     }
     else if (action === 'updateStatusEmail') {
-        // Fungsi baru: Hanya update status di DB Vercel, email dikirim oleh GAS
+        // Fungsi baru: Update status jika email berhasil dikirim oleh Google Script
         await dbQuery('PATCH', 'kehadiran', `?email=eq.${parsedBody.email}`, { status_email: 'Terkirim' });
         result = { success: true };
     }
