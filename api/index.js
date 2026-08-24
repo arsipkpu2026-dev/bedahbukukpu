@@ -49,7 +49,9 @@ module.exports = async function handler(req, res) {
     }
     else if (action === 'simpanPdf') {
       // Hasil generate massal oleh admin selalu masuk ke bucket 'generate'
-      const bucketName = 'generate';
+      const bucketName = String(parsedBody.jenis) === '2'
+        ? 'sertifikat2'
+        : 'sertifikat';
       const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
       const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
         method: 'POST',
@@ -146,7 +148,9 @@ module.exports = async function handler(req, res) {
         result = { success: true, message: "Status di-update." };
     }
     else { result = { success: false, message: "Aksi tidak dikenali." }; }
-  } catch (err) { result = { success: false, message: "Server Error: " + err.message }; }
+  } catch (err) {
+    console.error('GAGAL SIMPAN PDF:', err);
+}
   
   res.status(200).json(result);
 };
