@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 // ========================================================
-// MASUKKAN KREDENSIAL SUPABASE ANDA DI SINI
+// KREDENSIAL SUPABASE
 // ========================================================
 const SUPABASE_URL = "https://tvtvzopswbwwwshhhmre.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dHZ6b3Bzd2J3d3dzaGhobXJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NTAxMDQsImV4cCI6MjEwMzEyNjEwNH0._WK_iFjfg64BWa2PRx8ljHKEX5ojmzpjVUKihtG0-3I";
@@ -23,7 +23,7 @@ function hashSHA256(input) {
 }
 
 module.exports = async function handler(req, res) {
-  // Sistem Keamanan & Izin (CORS)[cite: 3]
+  // Sistem Keamanan & Izin (CORS)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -48,7 +48,8 @@ module.exports = async function handler(req, res) {
       result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat]) };
     }
     else if (action === 'simpanPdf') {
-      const bucketName = String(parsedBody.jenis) === '2' ? 'sertifikat2' : 'sertifikat';[cite: 3]
+      // 📌 Mengunci upload HANYA ke bucket 'generate' sesuai instruksi
+      const bucketName = 'generate'; 
       const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
       const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
         method: 'POST',
@@ -58,46 +59,7 @@ module.exports = async function handler(req, res) {
       if(!fileRes.ok) throw new Error(await fileRes.text());
       result = { success: true };
     }
-    else if (action === 'cariEmail') {
-        const nama = req.query.nama.toLowerCase();
-        const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';[cite: 3]
-
-        // Perbaikan endpoint list menggunakan search body yang didukung Supabase Storage v1
-        const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
-            method: 'POST', 
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prefix: "", limit: 100, search: nama })
-        });
-        
-        if (!listRes.ok) throw new Error(await listRes.text());
-        const files = await listRes.json();
-        const matched = Array.isArray(files) ? files.find(f => f.name && f.name.toLowerCase().includes(nama)) : null;
-
-        if(matched && matched.name) {
-            let parts = matched.name.replace('.pdf', '').split('_');
-            let emailParts = parts[parts.length - 1].split("@");
-            let masked = emailParts[0].length > 2 ? emailParts[0].substring(0, 2) + "***" : emailParts[0].substring(0, 1) + "***";
-            result = { success: true, email: `${masked}@${emailParts[1]}`, message: "Petunjuk email ditemukan!" };
-        } else { result = { success: false, message: "Tidak ada sertifikat dengan nama tersebut." }; }
-    }
-    else if (action === 'download') {
-        const email = req.query.email.toLowerCase();
-        const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';[cite: 3]
-
-        const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
-            method: 'POST', 
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prefix: "", limit: 100, search: email })
-        });
-        
-        if (!listRes.ok) throw new Error(await listRes.text());
-        const files = await listRes.json();
-        const matched = Array.isArray(files) ? files.find(f => f.name && f.name.toLowerCase().includes(email)) : null;
-
-        if(matched && matched.name) {
-            result = { success: true, url: `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${matched.name}`, message: "Sertifikat ditemukan!" };
-        } else { result = { success: false, message: "Sertifikat belum ada." }; }
-    }
+    // HAPUS fungsi cariEmail dan download dari sini karena sudah di-handle oleh G-Drive via GAS
     else if (action === 'login') {
         const data = await dbQuery('GET', 'admin', `?username=eq.${req.query.user}&password=eq.${hashSHA256(req.query.pass)}&select=*`);
         result = data.length > 0 ? { success: true } : { success: false, message: 'Username atau Password salah!' };
@@ -151,9 +113,8 @@ module.exports = async function handler(req, res) {
     }
     else { result = { success: false, message: "Aksi tidak dikenali." }; }
   } catch (err) {
-    console.error('ERROR STORAGE/API:', err);
-    // Mengirimkan detail error ke client agar tidak 404 tersembunyi
-    result = { success: false, message: err.message || "Terjadi kesalahan pada server." };
+    console.error('SERVER ERROR:', err);
+    result = { success: false, message: err.message };
   }
   
   res.status(200).json(result);
