@@ -99,7 +99,6 @@
             </div>
           </div>
 
-          <!-- Modifikasi Tooltip (title) di Menu Sertifikat Bedah Buku II -->
           <div id="menu-buku2-card" onclick="validasiAksesFormLokal('buku2')" title="Sertifikat elektronik kegiatan Bedah Buku II sedang dalam tahap pemrosesan dan validasi. Dokumen baru dapat diakses dan diunduh melalui sistem paling cepat H+1 setelah kegiatan selesai dilaksanakan." class="group relative bg-gradient-to-br from-cyan-600 to-blue-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-cyan-500/50 relative">
             <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📘</div>
             <div class="relative z-10 flex flex-col gap-3">
@@ -346,7 +345,9 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    const GAS_URL = "/api";
+    // DUA API URL: Satunya untuk G-Drive, Satunya untuk Supabase(Vercel)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyoNtlYsUfD8Z2h9b21ghI_mkz6_cW1XlWC5JPzEQ4TpvzNEhecC5_KPav_EygHMIR5/exec";
+    const VERCEL_URL = "/api";
 
     const APP_CONFIG = {
       hadir: {
@@ -508,14 +509,33 @@
 
     function formatUrl(url) { return /^https?:\/\//i.test(url.trim()) ? url.trim() : 'https://' + url.trim(); }
 
+    // =========================================================
+    // MODIFIKASI ROUTER: Pisahkan request GAS dan VERCEL
+    // =========================================================
     async function fetchAPI(action, params = {}, method = 'GET', retries = 2) {
-      let url = GAS_URL + "?action=" + action;
+      // Jika action adalah download sertifikat / cari email -> Tembak ke G-DRIVE (GAS)
+      const isGAS = (action === 'download' || action === 'cariEmail');
+      let url = isGAS ? GAS_URL : VERCEL_URL;
+      url += (method === 'GET' ? "?action=" + action : "");
+
       let options = { method: method, redirect: "follow" };
-      if (method === 'GET') { for (let key in params) url += `&${key}=${encodeURIComponent(params[key])}`; } 
-      else { options.body = JSON.stringify({ action: action, ...params }); options.headers = { 'Content-Type': 'text/plain;charset=utf-8' }; }
+      
+      if (method === 'GET') { 
+          for (let key in params) url += `&${key}=${encodeURIComponent(params[key])}`; 
+      } else { 
+          options.body = JSON.stringify({ action: action, ...params }); 
+          // Jika pakai GAS kirim text/plain, Jika Vercel kirim JSON
+          options.headers = { 'Content-Type': isGAS ? 'text/plain;charset=utf-8' : 'application/json' }; 
+      }
+      
       for (let i = 0; i <= retries; i++) {
-          try { const response = await fetch(url, options); return await response.json(); } 
-          catch (err) { if (i === retries) { return { success: false, message: "Koneksi ke server terputus. Silakan coba klik sekali lagi." }; } await new Promise(res => setTimeout(res, 1000)); }
+          try { 
+              const response = await fetch(url, options); 
+              return await response.json(); 
+          } catch (err) { 
+              if (i === retries) { return { success: false, message: "Koneksi ke server terputus. Silakan coba klik sekali lagi." }; } 
+              await new Promise(res => setTimeout(res, 1000)); 
+          }
       }
     }
 
@@ -621,6 +641,7 @@
         if(!inputNama || inputNama.length < 3) return Swal.fire({icon: 'warning', title: 'Perhatian', text: 'Ketik minimal 3 huruf nama Anda di kolom atas terlebih dahulu.', heightAuto: false});
         
         showLoading('Mencari Petunjuk Email...');
+        // Request ini otomatis lari ke GAS_URL karena action = 'cariEmail'[cite: 3]
         const res = await fetchAPI('cariEmail', { nama: inputNama, jenis: currentDownloadType }, 'GET');
         
         if(res.success) {
@@ -637,6 +658,7 @@
 
     async function submitDownload(e) {
       e.preventDefault(); showLoading('Mencari...');
+      // Request ini otomatis lari ke GAS_URL karena action = 'download'[cite: 3]
       const res = await fetchAPI('download', { nama: document.getElementById('d-nama').value, email: document.getElementById('d-email').value, jenis: currentDownloadType }, 'GET');
       if (res.success) Swal.fire({ title: 'Ditemukan!', text: res.message, icon: 'success', confirmButtonText: 'Unduh', heightAuto: false }).then((r) => { if (r.isConfirmed) window.open(res.url, '_blank'); });
       else Swal.fire({title:'Gagal', text:res.message, icon:'warning', heightAuto:false});
@@ -787,6 +809,13 @@
       if (templateType === 'image' || templateType === 'pdf-preview') { ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height); } 
       else if (templateType === 'fallback') { ctx.fillStyle = "#e2e8f0"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#64748b"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("[Preview Transparan]", canvas.width/2, canvas.height/2); } else return;
       
+      if (isDragging && (window.snapGuideX !== null || window.snapGuideY !== null)) {
+          ctx.save(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; 
+          if (window.snapGuideX !== null) { ctx.moveTo(window.snapGuideX, 0); ctx.lineTo(window.snapGuideX, canvas.height); }
+          if (window.snapGuideY !== null) { ctx.moveTo(0, window.snapGuideY); ctx.lineTo(canvas.width, window.snapGuideY); }
+          ctx.stroke(); ctx.restore();
+      }
+
       Object.keys(els).forEach(key => {
         let el = els[key]; let isAct = (key === activeEl);
         ctx.strokeStyle = isAct ? "rgba(239, 68, 68, 0.9)" : "rgba(100, 116, 139, 0.4)"; ctx.lineWidth = isAct ? 4 : 2; if(isAct) ctx.setLineDash([]); else ctx.setLineDash([5, 5]);
@@ -807,7 +836,7 @@
 
     function handleStart(e) { isDragging = true; updateRect(e); } 
     function handleMove(e) { if (isDragging) { updateRect(e); e.preventDefault(); } } 
-    function handleEnd() { isDragging = false; saveLocalConfig(); previewCanvas(); }
+    function handleEnd() { isDragging = false; window.snapGuideX = null; window.snapGuideY = null; saveLocalConfig(); previewCanvas(); }
     canvas.addEventListener('mousedown', handleStart); canvas.addEventListener('mousemove', handleMove); canvas.addEventListener('mouseup', handleEnd);
     canvas.addEventListener('touchstart', handleStart, {passive: false}); canvas.addEventListener('touchmove', handleMove, {passive: false}); canvas.addEventListener('touchend', handleEnd);
     
@@ -816,6 +845,13 @@
       const cssRect = canvas.getBoundingClientRect(), clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const scaleX = canvas.width / cssRect.width, scaleY = canvas.height / cssRect.height;
       let targetX = (clientX - cssRect.left) * scaleX; let targetY = (clientY - cssRect.top) * scaleY; 
+      const snapThreshold = 15; window.snapGuideX = null; window.snapGuideY = null;
+      let w = els[activeEl].w; let h = els[activeEl].h; let centerX = targetX + w / 2; let centerY = targetY + h / 2;
+      let canvasCenterX = canvas.width / 2; let canvasCenterY = canvas.height / 2;
+      let otherElKey = activeEl === 'nama' ? 'nomor' : 'nama'; let otherEl = els[otherElKey];
+      let otherCenterX = otherEl.x + otherEl.w / 2; let otherLeft = otherEl.x; let otherCenterY = otherEl.y + otherEl.h / 2; let otherTop = otherEl.y; let otherBottom = otherEl.y + otherEl.h;
+      if (Math.abs(centerX - canvasCenterX) < snapThreshold) { targetX = canvasCenterX - w / 2; window.snapGuideX = canvasCenterX; } else if (Math.abs(centerX - otherCenterX) < snapThreshold) { targetX = otherCenterX - w / 2; window.snapGuideX = otherCenterX; } else if (Math.abs(targetX - otherLeft) < snapThreshold) { targetX = otherLeft; window.snapGuideX = otherLeft; }
+      if (Math.abs(centerY - canvasCenterY) < snapThreshold) { targetY = canvasCenterY - h / 2; window.snapGuideY = canvasCenterY; } else if (Math.abs(centerY - otherCenterY) < snapThreshold) { targetY = otherCenterY - h / 2; window.snapGuideY = otherCenterY; } else if (Math.abs(targetY - otherTop) < snapThreshold) { targetY = otherTop; window.snapGuideY = otherTop; } else if (Math.abs(targetY + h - otherBottom) < snapThreshold) { targetY = otherBottom - h; window.snapGuideY = otherBottom; }
       els[activeEl].x = targetX; els[activeEl].y = targetY; previewCanvas();
     }
 
