@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
       result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat]) };
     }
     else if (action === 'simpanPdf') {
-      // Hasil generate massal oleh admin selalu masuk ke bucket 'generate'
+      // Hasil generate massal oleh admin diarahkan secara mutlak ke bucket 'generate'
       const bucketName = 'generate';
       const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
       const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
@@ -61,7 +61,7 @@ module.exports = async function handler(req, res) {
     }
     else if (action === 'cariEmail') {
         const nama = req.query.nama.toLowerCase();
-        // Pencarian download peserta: jenis 2 ke bucket 'sertifikat2', jenis 1 ke bucket 'sertifikat'
+        // Bedah Buku II menggunakan bucket 'sertifikat2', Bedah Buku I menggunakan bucket 'sertifikat'[cite: 8]
         const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';
 
         const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
@@ -80,7 +80,7 @@ module.exports = async function handler(req, res) {
     }
     else if (action === 'download') {
         const email = req.query.email.toLowerCase();
-        // Pengunduhan file peserta: jenis 2 ke bucket 'sertifikat2', jenis 1 ke bucket 'sertifikat'[cite: 8]
+        // Bedah Buku II menggunakan bucket 'sertifikat2', Bedah Buku I menggunakan bucket 'sertifikat'[cite: 8]
         const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';
 
         const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
