@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
     if (action === 'hadirTeks') {
       const d = parsedBody.data;
       await dbQuery('POST', 'kehadiran', '', { nama: d[0], instansi: d[1], email: d[2], hp: d[3], auto_email: d[4] });
-      result = { success: true, message: "Pendaftaran Berhasil Tanpa Antre!" };
+      result = { success: true, message: "Pendaftaran Berhasil!" };
     }
     else if (action === 'getData') {
       const data = await dbQuery('GET', 'kehadiran', '?select=*&order=id.asc');
