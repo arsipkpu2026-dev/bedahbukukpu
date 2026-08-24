@@ -1,8 +1,5 @@
 const crypto = require('crypto');
 
-// ========================================================
-// MASUKKAN KREDENSIAL SUPABASE ANDA DI SINI
-// ========================================================
 const SUPABASE_URL = "https://tvtvzopswbwwwshhhmre.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dHZ6b3Bzd2J3d3dzaGhobXJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NTAxMDQsImV4cCI6MjEwMzEyNjEwNH0._WK_iFjfg64BWa2PRx8ljHKEX5ojmzpjVUKihtG0-3I";
 
@@ -23,7 +20,6 @@ function hashSHA256(input) {
 }
 
 module.exports = async function handler(req, res) {
-  // Sistem Keamanan & Izin (CORS)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -48,7 +44,6 @@ module.exports = async function handler(req, res) {
       result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat]) };
     }
     else if (action === 'simpanPdf') {
-      // Hasil generate massal oleh admin selalu masuk ke bucket 'generate'[cite: 12]
       const bucketName = 'generate';
       const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
       const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
@@ -60,8 +55,7 @@ module.exports = async function handler(req, res) {
       result = { success: true };
     }
     else if (action === 'cariEmail') {
-        const nama = req.query.nama.toLowerCase();
-        // Pencarian download peserta: jenis 2 ke bucket 'sertifikat2', jenis 1 ke bucket 'sertifikat'[cite: 12]
+        const nama = (req.query.nama || "").toLowerCase();
         const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';
 
         const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
@@ -80,8 +74,7 @@ module.exports = async function handler(req, res) {
         } else { result = { success: false, message: "Tidak ada sertifikat dengan nama tersebut." }; }
     }
     else if (action === 'download') {
-        const email = req.query.email.toLowerCase();
-        // Pengunduhan file peserta: jenis 2 ke bucket 'sertifikat2', jenis 1 ke bucket 'sertifikat'[cite: 12]
+        const email = (req.query.email || "").toLowerCase();
         const bucketName = req.query.jenis === '2' ? 'sertifikat2' : 'sertifikat';
 
         const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${bucketName}`, {
@@ -152,4 +145,3 @@ module.exports = async function handler(req, res) {
   
   res.status(200).json(result);
 };
-```[cite: 12]
