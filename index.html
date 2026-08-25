@@ -51,10 +51,12 @@
         
         <!-- BANTUAN & ADMIN NAV -->
         <div class="flex items-center gap-2">
+          <!-- Tombol Hubungi Admin (Gabungan) -->
           <button onclick="klikHubungiAdmin()" class="text-[10px] md:text-xs font-bold bg-slate-800 text-white px-4 py-2 rounded-xl shadow-md hover:bg-slate-700 active:scale-95 transition flex items-center gap-1.5" title="Pusat Bantuan">
              🎧 <span>Hubungi Admin</span>
           </button>
           
+          <!-- Tombol Admin -->
           <button id="btn-login-nav" class="text-[10px] md:text-xs font-bold bg-white/50 text-slate-700 px-4 py-2 rounded-xl border border-slate-200/50 shadow-sm hover:bg-slate-50 active:scale-95 transition ml-1 md:ml-2">🛠️</button>
           <button id="btn-logout-nav" onclick="logoutAdmin()" class="hidden text-[10px] md:text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-xl border border-red-200 shadow-sm hover:bg-red-100 active:scale-95 transition">Logout</button>
         </div>
@@ -264,8 +266,8 @@
             </div>
             
             <div class="mt-4 flex flex-col gap-2">
-              <button onclick="generateMassal()" class="w-full bg-slate-800 text-white font-black py-3 rounded-xl text-sm transition active:scale-95 shadow-md">1. Buat & Simpan PDF ke Google Drive (Centang)</button>
-              <button onclick="triggerKirimEmail()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-[11px] lg:text-xs transition active:scale-95 shadow-md mt-2">📧 Kirim Notifikasi Sertifikat via Gmail (Centang)</button>
+              <button onclick="generateMassal()" class="w-full bg-slate-800 text-white font-black py-3 rounded-xl text-sm transition active:scale-95 shadow-md">1. Buat PDF (Untuk Yang Dicentang)</button>
+              <button onclick="triggerKirimEmail()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-[11px] lg:text-xs transition active:scale-95 shadow-md mt-2">📧 Kirim Email (Massal / Centang)</button>
             </div>
           </div>
         </div>
@@ -302,20 +304,23 @@
         
         <!-- PENGATURAN UMUM & KEAMANAN -->
         <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Pengaturan Umum (Sertifikat & Email Laporan) -->
             <div class="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-sm flex flex-col justify-between">
                <div>
-                   <h4 class="text-xs font-extrabold text-slate-800 uppercase border-b pb-2 mb-3 border-slate-200">⚙️ Pengaturan Umum</h4>
+                   <h4 class="text-xs font-extrabold text-slate-800 uppercase border-b pb-2 mb-3 border-slate-200">⚙️ Pengaturan Umum (Sertifikat)</h4>
                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
                         <label class="block text-[10px] font-bold text-slate-600">Nomor Sertifikat</label>
-                        <select id="s-tipe-nomor" class="w-full border border-slate-200 p-2 rounded-lg text-xs bg-slate-50" onchange="toggleKodeInput()"><option value="otomatis">Urut Otomatis</option><option value="manual">Manual Database (Supabase)</option></select>
+                        <select id="s-tipe-nomor" class="w-full border border-slate-200 p-2 rounded-lg text-xs bg-slate-50" onchange="toggleKodeInput()"><option value="otomatis">Urut Otomatis</option><option value="manual">Manual Kolom Sheet</option></select>
                       </div>
                       <div id="kode-container" class="sm:col-span-2"><label class="block text-[10px] font-bold text-slate-600">Format Kode Otomatis</label><input type="text" id="s-kode" placeholder="/HM.07-Kt/1223/2/2026" class="w-full border border-slate-200 p-2 rounded-lg text-xs font-mono bg-slate-50"></div>
+                      <div class="sm:col-span-3"><label class="block text-[10px] font-bold text-slate-600">Email Admin (Penerima Laporan Sukses TTE)</label><input type="email" id="a-email" placeholder="arsipkpu2026@gmail.com" class="w-full border border-slate-200 p-2 rounded-lg text-xs bg-slate-50"></div>
                    </div>
                </div>
-               <button onclick="saveSetUmum()" class="mt-4 w-full bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs transition active:scale-95 shadow-sm hover:bg-slate-700">Simpan Pengaturan</button>
+               <button onclick="saveSetUmum()" class="mt-4 w-full bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs transition active:scale-95 shadow-sm hover:bg-slate-700">Simpan Pengaturan Umum</button>
             </div>
 
+            <!-- Ganti Password -->
             <div class="bg-slate-50 p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between">
                <div>
                  <h3 class="text-xs font-extrabold text-slate-800 uppercase border-b pb-2 mb-3 border-slate-200">🔐 Ganti Sandi Admin</h3>
@@ -333,31 +338,46 @@
     <!-- FOOTER -->
     <footer class="bg-slate-900/90 backdrop-blur text-white text-center py-4 flex-none border-t border-white/10 mt-auto">
       <p class="text-[13px] md:text-sm font-semibold tracking-wide">&copy; <span id="year"></span> KPU Kabupaten Labuhanbatu Utara.</p>
+      <p class="text-[10px] md:text-[11px] text-slate-400 mt-1 normal-case tracking-widest font-bold">v.0.1.9</p>
     </footer>
   </div>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    // DUA API URL YANG SUDAH DIPISAH TEGAS
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz7OY5eSwISdycr22AyzMJ2cDiSMQc3ykb8dsTG7g1woUtaWhAxiL-fjYV9mtH39R7a/exec";
-    const VERCEL_URL = "/api"; 
+    // DUA API URL: Satunya untuk G-Drive, Satunya untuk Supabase(Vercel)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby4MCr_BukyzQ3bS7e7v20C2eY_cKbqL2EqXNMVHNGhc3M_NxBxxGq1oO9PdViWWvvZ/exec";
+    const VERCEL_URL = "/api";
 
     const APP_CONFIG = {
-      hadir: { mode: 'Timer', start: '2026-08-02T00:00:00+07:00', end: '2026-09-02T17:15:00+07:00', msg: 'Form daftar hadir belum dibuka.' },
-      buku2: { mode: 'Tutup', msg: 'Sertifikat elektronik paling cepat H+3.' },
-      bantuan: { wa: '6281263184787', email: 'arsipkpu2026@gmail.com' }
+      hadir: {
+        mode: 'Timer',
+        start: '2026-09-02T00:00:00+07:00',
+        end: '2026-09-02T17:15:00+07:00',
+        msg: 'Form daftar hadir belum dibuka.'
+      },
+      buku2: {
+        mode: 'Tutup',
+        msg: 'Sertifikat elektronik baru dapat diakses dan diunduh melalui sistem paling cepat H+3 setelah kegiatan selesai dilaksanakan.'
+      },
+      bantuan: {
+        wa: '6281263184787',
+        email: 'arsipkpu2026@gmail.com'
+      }
     };
 
     let savedTemplateConfig = ""; 
     let currentDownloadType = 1; 
 
     function cekStatusLokal(fitur) {
-        const now = new Date().getTime(); const cfg = APP_CONFIG[fitur];
+        const now = new Date().getTime();
+        const cfg = APP_CONFIG[fitur];
+        
         if (cfg.mode === 'Tutup') return { isOpen: false, message: cfg.msg };
         if (cfg.mode === 'Buka') return { isOpen: true, message: '' };
         if (cfg.mode === 'Timer') {
-            let start = cfg.start ? new Date(cfg.start).getTime() : 0; let end = cfg.end ? new Date(cfg.end).getTime() : 0;
+            let start = cfg.start ? new Date(cfg.start).getTime() : 0;
+            let end = cfg.end ? new Date(cfg.end).getTime() : 0;
             if (start && now < start) return { isOpen: false, message: cfg.msg };
             if (end && now > end) return { isOpen: false, message: cfg.msg };
             return { isOpen: true, message: '', start: cfg.start, end: cfg.end };
@@ -366,64 +386,135 @@
     }
 
     function refreshLokalUI() {
-        const stHadir = cekStatusLokal('hadir'); const divHadir = document.getElementById('menu-hadir-card');
+        const stHadir = cekStatusLokal('hadir');
+        const divHadir = document.getElementById('menu-hadir-card');
         if(!stHadir.isOpen) tempelWatermark(divHadir); else hapusWatermark(divHadir);
-        const stBuku2 = cekStatusLokal('buku2'); const divBuku2 = document.getElementById('menu-buku2-card');
+        
+        const stBuku2 = cekStatusLokal('buku2');
+        const divBuku2 = document.getElementById('menu-buku2-card');
         if(!stBuku2.isOpen) tempelWatermark(divBuku2); else hapusWatermark(divBuku2);
     }
-    window.addEventListener('DOMContentLoaded', refreshLokalUI);
+
+    window.addEventListener('DOMContentLoaded', (event) => { 
+        refreshLokalUI();
+    });
 
     function toggleKodeInput() { document.getElementById('kode-container').style.display = document.getElementById('s-tipe-nomor').value === 'otomatis' ? 'block' : 'none'; }
-    function tempelWatermark(elemen) { if(!elemen || elemen.querySelector('.watermark-overlay')) return; elemen.style.filter = 'grayscale(50%) opacity(80%)'; elemen.innerHTML += `<div class='watermark-overlay absolute inset-0 flex items-center justify-center z-20 overflow-hidden bg-slate-900/30 backdrop-blur-[1px] rounded-[1.5rem]' style='pointer-events: none;'><div class='text-4xl md:text-5xl drop-shadow-lg mb-12' title='Belum Dibuka'>🔒</div></div>`; }
-    function hapusWatermark(elemen) { if(!elemen) return; elemen.style.pointerEvents = 'auto'; elemen.style.filter = 'none'; const wm = elemen.querySelector('.watermark-overlay'); if(wm) wm.remove(); }
+
+    function tempelWatermark(elemen) {
+      if(!elemen || elemen.querySelector('.watermark-overlay')) return;
+      elemen.style.filter = 'grayscale(50%) opacity(80%)';
+      elemen.innerHTML += `<div class='watermark-overlay absolute inset-0 flex items-center justify-center z-20 overflow-hidden bg-slate-900/30 backdrop-blur-[1px] rounded-[1.5rem]' style='pointer-events: none;'><div class='text-4xl md:text-5xl drop-shadow-lg mb-12' title='Belum Dibuka'>🔒</div></div>`;
+    }
+
+    function hapusWatermark(elemen) {
+      if(!elemen) return;
+      elemen.style.pointerEvents = 'auto';
+      elemen.style.filter = 'none';
+      const wm = elemen.querySelector('.watermark-overlay');
+      if(wm) wm.remove();
+    }
 
     function validasiAksesFormLokal(fitur) {
         const st = cekStatusLokal(fitur);
         if (fitur === 'hadir') {
             if (st.isOpen) {
                 navTo('hadir'); const infoDiv = document.getElementById('info-waktu-hadir');
-                let jejakHadir = localStorage.getItem('kpu_labura_hadir_v1'); let stempelHTML = '';
-                if (jejakHadir) stempelHTML = `<div class="bg-emerald-100 border border-emerald-400 text-emerald-800 p-4 rounded-xl mb-3 shadow-sm font-bold text-xs md:text-sm flex flex-col gap-3"><div class="flex items-start gap-2"><span>✅</span> <div>Pendaftaran terakhir di perangkat ini:<br><span class="text-emerald-900 text-sm md:text-base font-black">${jejakHadir}</span><br><span class="text-[10px] text-red-600 font-extrabold mt-1.5 block leading-tight">Silakan catat/ingat email di atas agar tidak lupa saat mencari sertifikat nanti.</span></div></div><button type="button" onclick="hapusJejakLokal()" class="bg-white border border-emerald-300 text-emerald-700 px-4 py-2 rounded-lg text-[10px] w-fit hover:bg-emerald-50 active:scale-95 transition shadow-sm font-extrabold">Daftarkan Peserta Lain</button></div>`;
+                let jejakHadir = localStorage.getItem('kpu_labura_hadir_v1');
+                let stempelHTML = '';
+                if (jejakHadir) {
+                    stempelHTML = `
+                    <div class="bg-emerald-100 border border-emerald-400 text-emerald-800 p-4 rounded-xl mb-3 shadow-sm font-bold text-xs md:text-sm flex flex-col gap-3">
+                        <div class="flex items-start gap-2">
+                            <span>✅</span> 
+                            <div>
+                                Pendaftaran terakhir di perangkat ini:<br>
+                                <span class="text-emerald-900 text-sm md:text-base font-black">${jejakHadir}</span><br>
+                                <span class="text-[10px] text-red-600 font-extrabold mt-1.5 block leading-tight">Silakan catat/ingat email di atas agar tidak lupa saat mencari sertifikat nanti.</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="hapusJejakLokal()" class="bg-white border border-emerald-300 text-emerald-700 px-4 py-2 rounded-lg text-[10px] w-fit hover:bg-emerald-50 active:scale-95 transition shadow-sm font-extrabold">Daftarkan Peserta Lain</button>
+                    </div>`;
+                }
+
                 if(APP_CONFIG.hadir.start || APP_CONFIG.hadir.end) {
                     let strMulai = APP_CONFIG.hadir.start ? new Date(APP_CONFIG.hadir.start).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Kapan saja';
                     let strSelesai = APP_CONFIG.hadir.end ? new Date(APP_CONFIG.hadir.end).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Tidak Terbatas';
-                    infoDiv.style.display = 'block'; infoDiv.innerHTML = stempelHTML + `📌 <b>Jadwal Pendaftaran:</b><br>Dibuka: <b>${strMulai}</b><br>Ditutup: <b>${strSelesai}</b>`;
-                } else { if(stempelHTML) { infoDiv.style.display = 'block'; infoDiv.innerHTML = stempelHTML; } else { infoDiv.style.display = 'none'; } }
+                    infoDiv.style.display = 'block'; 
+                    infoDiv.innerHTML = stempelHTML + `📌 <b>Jadwal Pendaftaran:</b><br>Dibuka: <b>${strMulai}</b><br>Ditutup: <b>${strSelesai}</b>`;
+                } else { 
+                    if(stempelHTML) {
+                        infoDiv.style.display = 'block'; infoDiv.innerHTML = stempelHTML;
+                    } else {
+                        infoDiv.style.display = 'none'; 
+                    }
+                }
             } else { Swal.fire({title:'Ditutup', text:st.message, icon:'warning', heightAuto:false}); }
         } else if (fitur === 'buku2') {
-            if (st.isOpen) openDownloadView(2); else Swal.fire({title:'Informasi', text:st.message, icon:'info', heightAuto:false});
+            if (st.isOpen) { openDownloadView(2); } else { Swal.fire({title:'Informasi', text:st.message, icon:'info', heightAuto:false}); }
         }
     }
 
-    function hapusJejakLokal() { localStorage.removeItem('kpu_labura_hadir_v1'); validasiAksesFormLokal('hadir'); }
+    function hapusJejakLokal() {
+        localStorage.removeItem('kpu_labura_hadir_v1');
+        validasiAksesFormLokal('hadir'); 
+    }
 
     function klikHubungiAdmin() {
-        let waConfig = APP_CONFIG.bantuan.wa; let emailConfig = APP_CONFIG.bantuan.email;
-        if(!waConfig && !emailConfig) return Swal.fire({ icon: 'info', title: 'Informasi', text: 'Layanan bantuan tidak tersedia saat ini.', heightAuto: false, customClass: { popup: 'rounded-[1.5rem]' }});
+        let waConfig = APP_CONFIG.bantuan.wa;
+        let emailConfig = APP_CONFIG.bantuan.email;
+
+        if(!waConfig && !emailConfig) {
+            return Swal.fire({ icon: 'info', title: 'Informasi', text: 'Layanan bantuan tidak tersedia saat ini.', heightAuto: false, customClass: { popup: 'rounded-[1.5rem]' }});
+        }
+
         let phone = waConfig ? waConfig.replace(/\D/g, '') : '';
-        if (phone.startsWith('0')) phone = '62' + phone.substring(1); else if (phone.startsWith('8')) phone = '62' + phone;
+        if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+        else if (phone.startsWith('8')) phone = '62' + phone;
+
         let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         let emailLink = isMobile ? `mailto:${emailConfig}` : `https://mail.google.com/mail/?view=cm&fs=1&to=${emailConfig}`;
+
         let waButtonHtml = waConfig ? `<a href="https://wa.me/${phone}" target="_blank" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-green-600 active:scale-95 text-center flex items-center justify-center gap-2">💬 Hubungi via WhatsApp</a>` : '';
+        
         let emailButtonHtml = emailConfig ? `<a href="${emailLink}" target="_blank" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-blue-600 active:scale-95 text-center flex items-center justify-center gap-2">📧 Hubungi via Email</a>` : '';
+
         Swal.fire({
             title: 'Pusat Bantuan',
-            html: `<div class="text-left text-xs md:text-sm text-slate-700 mb-5 bg-amber-50 p-4 rounded-xl border border-amber-200 leading-relaxed shadow-inner"><p class="font-extrabold text-amber-900 mb-1">📌 Catatan Penting:</p><p class="mb-2">Khusus pembuatan <b>Sertifikat</b>, proses akan dilakukan <b>setelah acara selesai</b>. Harap bersabar menunggu karena validasi dan penerapan TTE (Tanda Tangan Elektronik) dikerjakan satu per satu.</p><p>Jika terdapat kesalahan penulisan nama atau email pada saat mengisi daftar hadir, silakan laporkan melalui kontak di bawah.</p></div><div class="flex flex-col gap-3 mt-2">${waButtonHtml}${emailButtonHtml}</div>`,
-            showConfirmButton: false, showCloseButton: true, heightAuto: false, customClass: { popup: 'rounded-[2rem] shadow-2xl' }
+            html: `
+              <div class="text-left text-xs md:text-sm text-slate-700 mb-5 bg-amber-50 p-4 rounded-xl border border-amber-200 leading-relaxed shadow-inner">
+                  <p class="font-extrabold text-amber-900 mb-1">📌 Catatan Penting:</p>
+                  <p class="mb-2">Khusus pembuatan <b>Sertifikat</b>, proses akan dilakukan <b>setelah acara selesai</b>. Harap bersabar menunggu karena validasi dan penerapan TTE (Tanda Tangan Elektronik) dikerjakan satu per satu.</p>
+                  <p>Jika terdapat kesalahan penulisan nama atau email pada saat mengisi daftar hadir, silakan laporkan melalui kontak di bawah.</p>
+              </div>
+              <div class="flex flex-col gap-3 mt-2">
+                  ${waButtonHtml}
+                  ${emailButtonHtml}
+              </div>
+            `,
+            showConfirmButton: false, 
+            showCloseButton: true, 
+            heightAuto: false, 
+            customClass: { popup: 'rounded-[2rem] shadow-2xl' }
         });
     }
 
-    function showLoading(title = 'Memproses...') { Swal.fire({ title: title, html: `<div class="flex flex-col items-center p-3"><img src="https://upload.wikimedia.org/wikipedia/commons/4/46/KPU_Logo.svg" class="w-16 h-16 animate-bounce my-2 drop-shadow-md"><p class="text-xs text-slate-500 font-bold mt-2">Mohon tunggu...</p></div>`, showConfirmButton: false, allowOutsideClick: false, allowEscapeKey: false, heightAuto: false, customClass: { popup: 'rounded-[2rem] shadow-2xl' } }); }
+    function showLoading(title = 'Memproses...') {
+      Swal.fire({
+        title: title,
+        html: `<div class="flex flex-col items-center p-3"><img src="https://upload.wikimedia.org/wikipedia/commons/4/46/KPU_Logo.svg" class="w-16 h-16 animate-bounce my-2 drop-shadow-md"><p class="text-xs text-slate-500 font-bold mt-2">Mohon tunggu...</p></div>`,
+        showConfirmButton: false, allowOutsideClick: false, allowEscapeKey: false, heightAuto: false, customClass: { popup: 'rounded-[2rem] shadow-2xl' }
+      });
+    }
+
     function formatUrl(url) { return /^https?:\/\//i.test(url.trim()) ? url.trim() : 'https://' + url.trim(); }
-    function copyTxt(text) { navigator.clipboard.writeText(text).then(() => Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Tersalin!', heightAuto: false })); }
 
     // =========================================================
-    // ROUTER UTAMA: Pisahkan API Vercel dan Google Apps Script
+    // MODIFIKASI ROUTER: Pisahkan request GAS dan VERCEL
     // =========================================================
     async function fetchAPI(action, params = {}, method = 'GET', retries = 2) {
-      const listAksiGAS = ['download', 'cariEmail', 'simpanPdf', 'kirimEmailNotif'];
-      const isGAS = listAksiGAS.includes(action);
-      
+      // Jika action adalah download sertifikat / cari email -> Tembak ke G-DRIVE (GAS)
+      const isGAS = (action === 'download' || action === 'cariEmail');
       let url = isGAS ? GAS_URL : VERCEL_URL;
       url += (method === 'GET' ? "?action=" + action : "");
 
@@ -433,6 +524,7 @@
           for (let key in params) url += `&${key}=${encodeURIComponent(params[key])}`; 
       } else { 
           options.body = JSON.stringify({ action: action, ...params }); 
+          // Jika pakai GAS kirim text/plain, Jika Vercel kirim JSON
           options.headers = { 'Content-Type': isGAS ? 'text/plain;charset=utf-8' : 'application/json' }; 
       }
       
@@ -441,7 +533,7 @@
               const response = await fetch(url, options); 
               return await response.json(); 
           } catch (err) { 
-              if (i === retries) { return { success: false, message: "Koneksi terputus. Silakan coba lagi." }; } 
+              if (i === retries) { return { success: false, message: "Koneksi ke server terputus. Silakan coba klik sekali lagi." }; } 
               await new Promise(res => setTimeout(res, 1000)); 
           }
       }
@@ -460,7 +552,11 @@
       if(view === 'home') refreshLokalUI();
     }
 
-    function openDownloadView(type) { currentDownloadType = type; document.getElementById('download-title').innerText = (type === 1) ? "Cari Sertifikat Bedah Buku I" : "Cari Sertifikat Bedah Buku II"; document.getElementById('form-download').reset(); navTo('download'); }
+    function openDownloadView(type) {
+        currentDownloadType = type;
+        document.getElementById('download-title').innerText = (type === 1) ? "Cari Sertifikat Bedah Buku I" : "Cari Sertifikat Bedah Buku II";
+        document.getElementById('form-download').reset(); navTo('download');
+    }
 
     async function navToAgenda() {
       navTo('agenda'); document.getElementById('list-agenda-user').innerHTML = '<p class="text-center text-sm py-4 col-span-2">Memuat...</p>';
@@ -516,12 +612,16 @@
       document.getElementById('list-ebook-user').innerHTML = html;
     }
 
+    function copyTxt(text) { navigator.clipboard.writeText(text).then(() => Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Tersalin!', heightAuto: false })); }
+
     async function submitHadirTeks(e) {
       e.preventDefault();
       const st = cekStatusLokal('hadir');
       if (!st.isOpen) return Swal.fire({title:'Gagal', text:st.message, icon:'warning', heightAuto:false});
 
-      const inputNama = document.getElementById('h-nama').value.trim(); const inputEmail = document.getElementById('h-email').value.toLowerCase().trim();
+      const inputNama = document.getElementById('h-nama').value.trim();
+      const inputEmail = document.getElementById('h-email').value.toLowerCase().trim();
+      
       showLoading('Mendaftarkan Kehadiran...');
       const dataText = [ inputNama, document.getElementById('h-instansi').value, inputEmail, document.getElementById('h-hp').value, document.getElementById('h-auto-email').checked ];
       const resTeks = await fetchAPI('hadirTeks', { data: dataText }, 'POST');
@@ -529,7 +629,9 @@
       if (resTeks.success) { 
           const waktuSekarang = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
           localStorage.setItem('kpu_labura_hadir_v1', `${inputNama} | ${inputEmail} (${waktuSekarang} WIB)`);
-          document.getElementById('form-hadir').reset(); navTo('home'); 
+          
+          document.getElementById('form-hadir').reset(); 
+          navTo('home'); 
           Swal.fire({title:'Berhasil!', text:resTeks.message, icon:'success', heightAuto:false}); 
       } else { Swal.fire({title:'Gagal', text:resTeks.message, icon:'warning', heightAuto:false}); }
     }
@@ -537,14 +639,26 @@
     async function cariEmailLupa() {
         const inputNama = document.getElementById('d-nama').value.trim();
         if(!inputNama || inputNama.length < 3) return Swal.fire({icon: 'warning', title: 'Perhatian', text: 'Ketik nama Anda di kolom atas terlebih dahulu (Misalnya: "John Doe", Bisa ketik John atau keseluruhan nama).', heightAuto: false});
+        
         showLoading('Mencari Email...');
+        // Request ini otomatis lari ke GAS_URL karena action = 'cariEmail'[cite: 3]
         const res = await fetchAPI('cariEmail', { nama: inputNama, jenis: currentDownloadType }, 'GET');
-        if(res.success) { Swal.fire({ icon: 'success', title: 'Ditemukan!', html: `Sistem menemukan email yang cocok dengan nama tersebut:<br><br><b class="text-xl text-blue-700 tracking-wide bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 inline-block my-2">${res.email}</b><br><br><p class="text-xs text-red-600 font-bold mt-2">Silakan ingat-ingat dan KETIK SECARA LENGKAP email tersebut di kolom pencarian untuk mengunduh sertifikat.</p>`, heightAuto: false }); } 
-        else { Swal.fire({icon: 'error', title: 'Tidak Ditemukan', text: res.message, heightAuto: false}); }
+        
+        if(res.success) {
+            Swal.fire({
+                icon: 'success', 
+                title: 'Ditemukan!', 
+                html: `Sistem menemukan email yang cocok dengan nama tersebut:<br><br><b class="text-xl text-blue-700 tracking-wide bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 inline-block my-2">${res.email}</b><br><br><p class="text-xs text-red-600 font-bold mt-2">Silakan ingat-ingat dan KETIK SECARA LENGKAP email tersebut di kolom pencarian untuk mengunduh sertifikat.</p>`, 
+                heightAuto: false
+            });
+        } else {
+            Swal.fire({icon: 'error', title: 'Tidak Ditemukan', text: res.message, heightAuto: false});
+        }
     }
 
     async function submitDownload(e) {
       e.preventDefault(); showLoading('Mencari...');
+      // Request ini otomatis lari ke GAS_URL karena action = 'download'[cite: 3]
       const res = await fetchAPI('download', { nama: document.getElementById('d-nama').value, email: document.getElementById('d-email').value, jenis: currentDownloadType }, 'GET');
       if (res.success) Swal.fire({ title: 'Ditemukan!', text: res.message, icon: 'success', confirmButtonText: 'Unduh', heightAuto: false }).then((r) => { if (r.isConfirmed) window.open(res.url, '_blank'); });
       else Swal.fire({title:'Gagal', text:res.message, icon:'warning', heightAuto:false});
@@ -561,31 +675,52 @@
     async function loadSettings() {
       const res = await fetchAPI('getSettings'); 
       if(res) { 
-          document.getElementById('s-tipe-nomor').value = res.kode === 'otomatis' ? 'otomatis' : 'manual';
+          document.getElementById('s-tipe-nomor').value = res.kode === 'otomatis' ? 'otomatis' : (res.kode ? 'otomatis' : 'manual');
           document.getElementById('s-kode').value = res.kode || '/HM.07-Kt/1223/2/2026';
+          document.getElementById('a-email').value = res.adminEmail || '';
+          
           savedTemplateConfig = res.templateConfig || "";
           let localConfig = localStorage.getItem('localTemplateConfig');
           if (localConfig) { els = JSON.parse(localConfig); changeCanvasElement(); previewCanvas(); }
       }
     }
+
     function muatKonfigurasiTerakhir() {
         if(!savedTemplateConfig) return Swal.fire({title:'Info', text:'Belum ada pengaturan template yang tersimpan di server.', icon:'info', heightAuto:false});
-        try { els = JSON.parse(savedTemplateConfig); localStorage.setItem('localTemplateConfig', savedTemplateConfig); changeCanvasElement(); previewCanvas(); Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Dimuat!'}); } catch(e){}
+        try { els = JSON.parse(savedTemplateConfig); localStorage.setItem('localTemplateConfig', savedTemplateConfig); changeCanvasElement(); previewCanvas(); Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Dimuat dari server!', heightAuto:false}); } 
+        catch(e) { console.error("Error parse JSON template"); }
     }
 
-    async function saveSetUmum() { showLoading('Menyimpan...'); const res = await fetchAPI('simpanSetUmum', { kode: document.getElementById('s-kode').value }, 'POST'); if(res.success) Swal.fire({title:'Tersimpan', text:'', icon:'success', heightAuto:false}); }
-    async function saveSetTemplate() { showLoading('Menyimpan...'); const currentConfigStr = JSON.stringify(els); const res = await fetchAPI('simpanSetTemplate', { templateConfig: currentConfigStr }, 'POST'); if(res.success) { savedTemplateConfig = currentConfigStr; localStorage.removeItem('localTemplateConfig'); Swal.fire({title:'Tersimpan', text:'', icon:'success', heightAuto:false}); } }
-    async function changePassword() { showLoading('Memproses...'); const res = await fetchAPI('ubahPass', { oldPass: document.getElementById('p-old').value, newPass: document.getElementById('p-new').value }, 'POST'); if(res.success) Swal.fire({title:'Berhasil', text:'', icon:'success', heightAuto:false}); else Swal.fire({title:'Gagal', text:res.message, icon:'error', heightAuto:false}); }
+    async function saveSetUmum() {
+        showLoading('Menyimpan Pengaturan Umum...');
+        const res = await fetchAPI('simpanSetUmum', { kode: document.getElementById('s-kode').value, adminEmail: document.getElementById('a-email').value }, 'POST');
+        if(res.success) { Swal.fire({title:'Tersimpan', text:'Pengaturan Umum berhasil disimpan.', icon:'success', heightAuto:false}); }
+    }
+
+    async function saveSetTemplate() {
+        showLoading('Menyimpan Template & Koordinat...');
+        const currentConfigStr = JSON.stringify(els);
+        const res = await fetchAPI('simpanSetTemplate', { templateConfig: currentConfigStr }, 'POST');
+        if(res.success) { savedTemplateConfig = currentConfigStr; localStorage.removeItem('localTemplateConfig'); Swal.fire({title:'Tersimpan', text:'Desain dan titik koordinat tersimpan ke server.', icon:'success', heightAuto:false}); }
+    }
+
+    async function changePassword() {
+      showLoading('Memproses...');
+      const res = await fetchAPI('ubahPass', { oldPass: document.getElementById('p-old').value, newPass: document.getElementById('p-new').value }, 'POST');
+      if(res.success) Swal.fire({title:'Berhasil', text:'', icon:'success', heightAuto:false}); else Swal.fire({title:'Gagal', text:res.message, icon:'error', heightAuto:false});
+    }
 
     async function loadAgendaAdmin() {
       document.getElementById('table-agenda-admin').innerHTML = '<tr><td colspan="3" class="p-2 text-center">Memuat...</td></tr>';
       const res = await fetchAPI('getAgenda');
       if (!res.data || res.data.length === 0) return document.getElementById('table-agenda-admin').innerHTML = '<tr><td colspan="3" class="text-center p-2">Kosong</td></tr>';
-      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2">${new Date(row[2]).toLocaleString()}</td><td class="p-2"><button type="button" onclick="delAgenda('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
+      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2">${new Date(row[2]).toLocaleString()}</td><td class="p-2"><button onclick="delAgenda('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
       document.getElementById('table-agenda-admin').innerHTML = html;
     }
     async function submitAgendaAdmin(e) {
-      e.preventDefault(); showLoading('Menyimpan...'); await fetchAPI('addAgenda', { data: [document.getElementById('a-judul').value, document.getElementById('a-waktu').value, document.getElementById('a-platform').value, document.getElementById('a-link').value, document.getElementById('a-id').value, document.getElementById('a-pass').value, document.getElementById('a-bg').value, document.getElementById('a-waktu-selesai').value] }, 'POST'); Swal.close(); document.getElementById('form-agenda').reset(); loadAgendaAdmin();
+      e.preventDefault(); showLoading('Menyimpan...');
+      await fetchAPI('addAgenda', { data: [document.getElementById('a-judul').value, document.getElementById('a-waktu').value, document.getElementById('a-platform').value, document.getElementById('a-link').value, document.getElementById('a-id').value, document.getElementById('a-pass').value, document.getElementById('a-bg').value, document.getElementById('a-waktu-selesai').value] }, 'POST');
+      Swal.close(); document.getElementById('form-agenda').reset(); loadAgendaAdmin();
     }
     async function delAgenda(id) { if(!confirm("Hapus?")) return; showLoading('Menghapus...'); await fetchAPI('delAgenda', { id: id }, 'POST'); loadAgendaAdmin(); Swal.close(); }
 
@@ -593,11 +728,13 @@
       document.getElementById('table-ebook-admin').innerHTML = '<tr><td colspan="2" class="p-2 text-center">Memuat...</td></tr>';
       const res = await fetchAPI('getEbook');
       if (!res.data || res.data.length === 0) return document.getElementById('table-ebook-admin').innerHTML = '<tr><td colspan="2" class="text-center p-2">Kosong</td></tr>';
-      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2"><button type="button" onclick="delEbook('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
+      let html = ''; res.data.forEach(row => html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2"><button onclick="delEbook('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`);
       document.getElementById('table-ebook-admin').innerHTML = html;
     }
     async function submitEbookAdmin(e) {
-      e.preventDefault(); showLoading('Menyimpan...'); await fetchAPI('addEbook', { data: [document.getElementById('e-judul').value, document.getElementById('e-desc').value, document.getElementById('e-link').value] }, 'POST'); Swal.close(); document.getElementById('form-ebook').reset(); loadEbookAdmin();
+      e.preventDefault(); showLoading('Menyimpan...');
+      await fetchAPI('addEbook', { data: [document.getElementById('e-judul').value, document.getElementById('e-desc').value, document.getElementById('e-link').value] }, 'POST');
+      Swal.close(); document.getElementById('form-ebook').reset(); loadEbookAdmin();
     }
     async function delEbook(id) { if(!confirm("Hapus E-Book?")) return; showLoading('Menghapus...'); await fetchAPI('delEbook', { id: id }, 'POST'); loadEbookAdmin(); Swal.close(); }
 
@@ -608,28 +745,69 @@
       nama: { x: 50, y: 50, w: 300, h: 50, size: 55, font: 'Pacifico', weight: 'normal', align: 'center', text: '[NAMA PESERTA]' },
       nomor: { x: 50, y: 150, w: 250, h: 30, size: 13, font: 'Poppins', weight: 'bold', align: 'left', text: 'Nomor : 1/HM.07-Kt/1223/2/2026' }
     };
-    function changeCanvasElement() { activeEl = document.getElementById('el-select').value; if(!els[activeEl]) return; document.getElementById('coord-x').value = Math.round(els[activeEl].x); document.getElementById('coord-y').value = Math.round(els[activeEl].y); document.getElementById('font-size').value = els[activeEl].size; document.getElementById('font-align').value = els[activeEl].align; document.getElementById('font-family').value = els[activeEl].font; document.getElementById('font-weight').value = els[activeEl].weight || 'bold'; previewCanvas(); }
-    function updateElementStyle() { if(!els[activeEl]) return; els[activeEl].x = parseFloat(document.getElementById('coord-x').value) || els[activeEl].x; els[activeEl].y = parseFloat(document.getElementById('coord-y').value) || els[activeEl].y; els[activeEl].size = parseInt(document.getElementById('font-size').value) || 20; els[activeEl].align = document.getElementById('font-align').value; els[activeEl].font = document.getElementById('font-family').value; els[activeEl].weight = document.getElementById('font-weight').value; saveLocalConfig(); previewCanvas(); }
-    function saveLocalConfig() { localStorage.setItem('localTemplateConfig', JSON.stringify(els)); }
+
+    function changeCanvasElement() { 
+        activeEl = document.getElementById('el-select').value; 
+        if(!els[activeEl]) return; 
+        document.getElementById('coord-x').value = Math.round(els[activeEl].x);
+        document.getElementById('coord-y').value = Math.round(els[activeEl].y);
+        document.getElementById('font-size').value = els[activeEl].size; 
+        document.getElementById('font-align').value = els[activeEl].align; 
+        document.getElementById('font-family').value = els[activeEl].font; 
+        document.getElementById('font-weight').value = els[activeEl].weight || 'bold'; 
+        previewCanvas(); 
+    }
+    
+    function updateElementStyle() { 
+        if(!els[activeEl]) return; 
+        els[activeEl].x = parseFloat(document.getElementById('coord-x').value) || els[activeEl].x;
+        els[activeEl].y = parseFloat(document.getElementById('coord-y').value) || els[activeEl].y;
+        els[activeEl].size = parseInt(document.getElementById('font-size').value) || 20; 
+        els[activeEl].align = document.getElementById('font-align').value; 
+        els[activeEl].font = document.getElementById('font-family').value; 
+        els[activeEl].weight = document.getElementById('font-weight').value; 
+        saveLocalConfig();
+        previewCanvas(); 
+    }
+
+    function saveLocalConfig() {
+        localStorage.setItem('localTemplateConfig', JSON.stringify(els));
+    }
 
     async function loadTemplate(e) {
       const file = e.target.files[0]; if (!file) return; 
       document.getElementById('pdf-loading').style.display = 'flex'; basePdfBytes = null; templateType = 'none';
       const reader = new FileReader();
+
       if (file.type === 'application/pdf') {
           reader.onload = async function(event) {
               basePdfBytes = new Uint8Array(event.target.result); 
-              try { const loadingTask = pdfjsLib.getDocument({ data: basePdfBytes }); const pdf = await loadingTask.promise; const page = await pdf.getPage(1); let viewport = page.getViewport({ scale: 1.5 }); const tempCanvas = document.createElement('canvas'); const tempCtx = tempCanvas.getContext('2d'); tempCanvas.width = viewport.width; tempCanvas.height = viewport.height; tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); await page.render({ canvasContext: tempCtx, viewport: viewport }).promise; templateImg.onload = function() { templateType = 'pdf-preview'; canvas.width = templateImg.width; canvas.height = templateImg.height; canvas.style.width = '100%'; changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none'; }; templateImg.src = tempCanvas.toDataURL('image/jpeg', 0.8); } catch (error) { document.getElementById('pdf-loading').style.display = 'none'; }
+              try {
+                  const loadingTask = pdfjsLib.getDocument({ data: basePdfBytes }); const pdf = await loadingTask.promise; const page = await pdf.getPage(1);
+                  let viewport = page.getViewport({ scale: 1.5 }); const tempCanvas = document.createElement('canvas'); const tempCtx = tempCanvas.getContext('2d');
+                  tempCanvas.width = viewport.width; tempCanvas.height = viewport.height; tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                  await page.render({ canvasContext: tempCtx, viewport: viewport }).promise;
+                  templateImg.onload = function() { templateType = 'pdf-preview'; canvas.width = templateImg.width; canvas.height = templateImg.height; canvas.style.width = '100%'; if(!savedTemplateConfig && !localStorage.getItem('localTemplateConfig')) setupDefaultCoords(); else changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none'; }; templateImg.src = tempCanvas.toDataURL('image/jpeg', 0.8);
+              } catch (error) {
+                  templateType = 'fallback'; canvas.width = 1123; canvas.height = 794; canvas.style.width = '100%'; if(!savedTemplateConfig && !localStorage.getItem('localTemplateConfig')) setupDefaultCoords(); else changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none';
+              }
           }; reader.readAsArrayBuffer(file);
       } else {
-          reader.onload = function(event) { templateImg.onload = function() { templateType = 'image'; canvas.width = templateImg.width; canvas.height = templateImg.height; canvas.style.width = '100%'; changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none'; }; templateImg.src = event.target.result; }; reader.readAsDataURL(file);
+          reader.onload = function(event) {
+              templateImg.onload = function() { templateType = 'image'; canvas.width = templateImg.width; canvas.height = templateImg.height; canvas.style.width = '100%'; if(!savedTemplateConfig && !localStorage.getItem('localTemplateConfig')) setupDefaultCoords(); else changeCanvasElement(); document.getElementById('pdf-loading').style.display = 'none'; }; templateImg.src = event.target.result;
+          }; reader.readAsDataURL(file);
       }
+    }
+
+    function setupDefaultCoords() {
+      els.nama.x = canvas.width * 0.1; els.nama.y = canvas.height * 0.4; els.nama.w = canvas.width * 0.8; els.nama.h = canvas.height * 0.1;
+      els.nomor.x = canvas.width * 0.1; els.nomor.y = canvas.height * 0.2; els.nomor.w = canvas.width * 0.8; els.nomor.h = canvas.height * 0.05; changeCanvasElement(); 
     }
 
     function previewCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height); 
       if (templateType === 'image' || templateType === 'pdf-preview') { ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height); } 
-      else return;
+      else if (templateType === 'fallback') { ctx.fillStyle = "#e2e8f0"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#64748b"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("[Preview Transparan]", canvas.width/2, canvas.height/2); } else return;
       
       if (isDragging && (window.snapGuideX !== null || window.snapGuideY !== null)) {
           ctx.save(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; 
@@ -642,8 +820,10 @@
         let el = els[key]; let isAct = (key === activeEl);
         ctx.strokeStyle = isAct ? "rgba(239, 68, 68, 0.9)" : "rgba(100, 116, 139, 0.4)"; ctx.lineWidth = isAct ? 4 : 2; if(isAct) ctx.setLineDash([]); else ctx.setLineDash([5, 5]);
         ctx.strokeRect(el.x, el.y, el.w, el.h); ctx.fillStyle = isAct ? "rgba(239, 68, 68, 0.15)" : "transparent"; ctx.fillRect(el.x, el.y, el.w, el.h); ctx.setLineDash([]); 
+        
         let fontStr = el.font; if (el.font === 'Pacifico' || el.font === 'Poppins') fontStr = `'${el.font}'`; else if (el.font === 'Courier') fontStr = "'Courier New', Courier, monospace";
-        let weightStr = (el.weight === 'normal') ? 'normal' : 'bold'; ctx.font = `${weightStr} ${el.size}px ${fontStr}`; ctx.fillStyle = isAct ? "#000" : "#475569"; ctx.textBaseline = "middle";
+        let weightStr = (el.weight === 'normal') ? 'normal' : 'bold'; ctx.font = `${weightStr} ${el.size}px ${fontStr}`; 
+        ctx.fillStyle = isAct ? "#000" : "#475569"; ctx.textBaseline = "middle";
         let textX = el.align === 'center' ? el.x + (el.w / 2) : (el.align === 'right' ? el.x + el.w : el.x);
         ctx.textAlign = el.align; ctx.fillText(el.text, textX, el.y + (el.h / 2));
         if (isAct) {
@@ -661,7 +841,8 @@
     canvas.addEventListener('touchstart', handleStart, {passive: false}); canvas.addEventListener('touchmove', handleMove, {passive: false}); canvas.addEventListener('touchend', handleEnd);
     
     function updateRect(e) {
-      if(templateType === 'none') return; const cssRect = canvas.getBoundingClientRect(), clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      if(templateType === 'none') return; 
+      const cssRect = canvas.getBoundingClientRect(), clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const scaleX = canvas.width / cssRect.width, scaleY = canvas.height / cssRect.height;
       let targetX = (clientX - cssRect.left) * scaleX; let targetY = (clientY - cssRect.top) * scaleY; 
       const snapThreshold = 15; window.snapGuideX = null; window.snapGuideY = null;
@@ -684,7 +865,7 @@
         dbPeserta.forEach((row, i) => { 
           let hpRaw = row[4] ? row[4].toString().replace(/\D/g, '') : '';
           let txtHp = hpRaw ? `📞 +${hpRaw}` : '📞 -';
-          let emailFlags = `Minta Email: ${row[5] === "Ya" ? "Ya" : "-"} | Notif: <span class="${row[6]==='Terkirim'?'text-green-600 font-bold':''}">${row[6] || 'Belum'}</span>`;
+          let emailFlags = `Email Minta: ${row[5] === "Ya" ? "Ya" : "-"} | Status: <span class="${row[6]==='Terkirim'?'text-green-600 font-bold':''}">${row[6] || 'Belum'}</span>`;
           html += `<tr class="border-b hover:bg-slate-50 transition row-peserta"><td class="p-3"><input type="checkbox" class="chk-peserta rounded w-4 h-4 text-blue-600" value="${i}"></td><td class="p-3 text-center font-bold text-slate-600">${i+1}</td><td class="p-3"><p class="font-bold text-slate-800 search-target">${row[1]}</p><div class="text-[10px] font-normal text-slate-500 mt-1 search-target">${row[3]}<br>${txtHp}<br>${emailFlags}</div></td></tr>`; 
         });
         document.getElementById('table-peserta').innerHTML = html;
@@ -692,7 +873,15 @@
     }
     
     function toggleCheckAll() { const isChecked = document.getElementById('check-all').checked; document.querySelectorAll('.chk-peserta').forEach(el => el.checked = isChecked); }
-    function filterPeserta() { let input = document.getElementById("search-peserta").value.toLowerCase(); let rows = document.querySelectorAll(".row-peserta"); rows.forEach(row => { row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none"; }); }
+
+    function filterPeserta() {
+        let input = document.getElementById("search-peserta").value.toLowerCase();
+        let rows = document.querySelectorAll(".row-peserta");
+        rows.forEach(row => {
+            let textData = row.innerText.toLowerCase();
+            row.style.display = textData.includes(input) ? "" : "none";
+        });
+    }
 
     const fontUrls = { 'Pacifico': 'https://raw.githubusercontent.com/google/fonts/main/ofl/pacifico/Pacifico-Regular.ttf', 'Poppins': 'https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf' };
     let fontCacheBuffer = {}; let fontCacheBase64 = {};
@@ -719,9 +908,7 @@
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], fileName = `${nama}_${email}.pdf`;
             let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 1) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); let nomorSertifikat = "Nomor : " + rawNomor;
-            
             document.querySelector('.swal2-title').innerHTML = `Memproses ${i+1}/${checks.length}<br><small>${nama}</small>`;
-            
             try {
                 const pdfDoc = await PDFDocument.load(basePdfBytes); pdfDoc.registerFontkit(window.fontkit); 
                 let pdfCustomFonts = {};
@@ -738,17 +925,12 @@
                 let yOffsetNomor = (els.nomor.size * scaleY) * 0.35; firstPage.drawText(nomorSertifikat, { x: nox, y: height - ((els.nomor.y + (els.nomor.h/2)) * scaleY) - yOffsetNomor, size: els.nomor.size * scaleY, font: fNomor, color: rgb(0, 0, 0) });
 
                 const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
-                
-                // MENGIRIM FILE KE GOOGLE DRIVE
                 const res = await fetchAPI('simpanPdf', { base64Data: pdfBytes, filename: fileName, jenis: currentDownloadType }, 'POST', 0);
                 if(res.success) successCount++;
-
-                // JEDA 1.5 DETIK AGAR GOOGLE TIDAK ERROR RATE LIMIT
-                await new Promise(r => setTimeout(r, 1500));
-
             } catch (err) {}
           }
-      } else if (templateImg.src) {
+      } 
+      else if (templateImg.src) {
           const orientation = canvas.width > canvas.height ? 'l' : 'p';
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], fileName = `${nama}_${email}.pdf`;
@@ -763,38 +945,29 @@
             let nox = els.nomor.align === 'center' ? els.nomor.x + els.nomor.w/2 : (els.nomor.align === 'right' ? els.nomor.x + els.nomor.w : els.nomor.x); let wNomor = els.nomor.weight === 'normal' ? 'normal' : 'bold';
             if(els.nomor.font === 'Arial') pdf.setFont("helvetica", wNomor); else if(els.nomor.font === 'Times') pdf.setFont("times", wNomor); else if(els.nomor.font === 'Courier') pdf.setFont("courier", wNomor); else pdf.setFont(els.nomor.font, "normal");
             pdf.setFontSize(els.nomor.size); pdf.text(nomorSertifikat, nox, els.nomor.y + (els.nomor.h/2), { align: els.nomor.align, baseline: 'middle' });
-            try { 
-                const res = await fetchAPI('simpanPdf', { base64Data: pdf.output('datauristring'), filename: fileName, jenis: currentDownloadType }, 'POST', 0); 
-                if(res.success) successCount++; 
-                await new Promise(r => setTimeout(r, 1500));
-            } catch (err) {}
+            try { const res = await fetchAPI('simpanPdf', { base64Data: pdf.output('datauristring'), filename: fileName, jenis: currentDownloadType }, 'POST', 0); if(res.success) successCount++; } catch (err) {}
           }
       }
-      Swal.fire({ title: 'Selesai!', text: `Berhasil mencetak dan mengamankan ${successCount} PDF ke Google Drive.`, icon: 'success', heightAuto: false });
+      Swal.fire({ title: 'Selesai!', text: `Berhasil mencetak ${successCount} PDF.`, icon: 'success', heightAuto: false });
     }
 
     async function triggerKirimEmail() {
       const checks = document.querySelectorAll('.chk-peserta:checked');
-      if (checks.length === 0) return Swal.fire({title:'Peringatan', text:'Pilih minimal 1 peserta.', icon:'warning', heightAuto:false});
+      let confirmText = ''; let emailsToTarget = [];
+      if (checks.length > 0) {
+          checks.forEach(cb => emailsToTarget.push(dbPeserta[cb.value][3]));
+          confirmText = `Anda telah mencentang ${checks.length} peserta. Email hanya akan dikirimkan ke peserta yang dicentang.`;
+      } else {
+          confirmText = `Anda TIDAK mencentang satupun peserta. Sistem akan mengirim email SECARA MASSAL. Lanjut?`;
+      }
 
       Swal.fire({
-        title: 'Kirim Notifikasi Sertifikat?', text: `Sistem akan mengirim email resmi menggunakan Gmail Anda ke ${checks.length} peserta yang dicentang.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Kirim Sekarang', confirmButtonColor: '#ea580c', heightAuto: false
+        title: 'Konfirmasi Pengiriman Email', text: confirmText, icon: 'warning', showCancelButton: true, confirmButtonText: 'Kirim Sekarang', confirmButtonColor: '#16a34a', heightAuto: false
       }).then(async (result) => {
         if (result.isConfirmed) {
-            let successCount = 0;
-            for (let i = 0; i < checks.length; i++) {
-                let pIndex = checks[i].value, namaPeserta = dbPeserta[pIndex][1], emailTarget = dbPeserta[pIndex][3];
-                document.querySelector('.swal2-title').innerHTML = `Mengirim Email ${i+1}/${checks.length}<br><small>${namaPeserta}</small>`;
-                
-                const resEmail = await fetchAPI('kirimEmailNotif', { email: emailTarget, nama: namaPeserta }, 'POST', 0);
-                if(resEmail.success) {
-                   await fetchAPI('updateStatusEmail', { email: emailTarget }, 'POST', 0);
-                   successCount++;
-                }
-                // Jeda 1 detik agar Gmail aman
-                await new Promise(r => setTimeout(r, 1000));
-            }
-            Swal.fire({title:'Selesai!', text:`Berhasil mengirim email ke ${successCount} peserta.`, icon:'success', heightAuto:false}); loadDataPeserta();
+          showLoading('Mengirim Email...');
+          const res = await fetchAPI('kirimEmailTTE', { selectedEmails: emailsToTarget }, 'POST', 0); 
+          if(res.success) { Swal.fire({title:'Selesai!', text:res.message, icon:'success', heightAuto:false}); loadDataPeserta(); } else Swal.fire({title:'Gagal', text:res.message, icon:'error', heightAuto:false});
         }
       });
     }
