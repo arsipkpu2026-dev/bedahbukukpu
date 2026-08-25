@@ -59,7 +59,6 @@ module.exports = async function handler(req, res) {
       if(!fileRes.ok) throw new Error(await fileRes.text());
       result = { success: true };
     }
-    // HAPUS fungsi cariEmail dan download dari sini karena sudah di-handle oleh G-Drive via GAS
     else if (action === 'login') {
         const data = await dbQuery('GET', 'admin', `?username=eq.${req.query.user}&password=eq.${hashSHA256(req.query.pass)}&select=*`);
         result = data.length > 0 ? { success: true } : { success: false, message: 'Username atau Password salah!' };
@@ -90,28 +89,38 @@ module.exports = async function handler(req, res) {
         result = { data: data.map(r => [r.id, r.judul, r.waktu_mulai, r.platform, r.link, r.meeting_id, r.passcode, r.link_bg, r.waktu_selesai]) };
     }
     else if (action === 'addAgenda') {
-        const d = parsedBody.data; await dbQuery('POST', 'agenda', '', { id: Date.now().toString(), judul: d[0], waktu_mulai: d[1], platform: d[2], link: d[3], meeting_id: d[4], passcode: d[5], link_bg: d[6], waktu_selesai: d[7] }); result = { success: true };
+        const d = parsedBody.data; 
+        await dbQuery('POST', 'agenda', '', { id: Date.now().toString(), judul: d[0], waktu_mulai: d[1], platform: d[2], link: d[3], meeting_id: d[4], passcode: d[5], link_bg: d[6], waktu_selesai: d[7] }); 
+        result = { success: true };
     }
     else if (action === 'delAgenda') {
-        await dbQuery('DELETE', 'agenda', `?id=eq.${parsedBody.id}`); result = { success: true };
+        await dbQuery('DELETE', 'agenda', `?id=eq.${parsedBody.id}`); 
+        result = { success: true };
     }
     else if (action === 'getEbook') {
         const data = await dbQuery('GET', 'ebook', '?select=*&order=id.desc');
         result = { data: data.map(r => [r.id, r.judul, r.deskripsi, r.link_download]) };
     }
     else if (action === 'addEbook') {
-        const d = parsedBody.data; await dbQuery('POST', 'ebook', '', { id: Date.now().toString(), judul: d[0], deskripsi: d[1], link_download: d[2] }); result = { success: true };
+        const d = parsedBody.data; 
+        await dbQuery('POST', 'ebook', '', { id: Date.now().toString(), judul: d[0], deskripsi: d[1], link_download: d[2] }); 
+        result = { success: true };
     }
     else if (action === 'delEbook') {
-        await dbQuery('DELETE', 'ebook', `?id=eq.${parsedBody.id}`); result = { success: true };
+        await dbQuery('DELETE', 'ebook', `?id=eq.${parsedBody.id}`); 
+        result = { success: true };
     }
     else if (action === 'kirimEmailTTE') {
         if (parsedBody.selectedEmails && parsedBody.selectedEmails.length > 0) {
            for(let e of parsedBody.selectedEmails) await dbQuery('PATCH', 'kehadiran', `?email=eq.${e}`, { status_email: 'Terkirim' });
-        } else { await dbQuery('PATCH', 'kehadiran', `?auto_email=eq.true`, { status_email: 'Terkirim' }); }
+        } else { 
+           await dbQuery('PATCH', 'kehadiran', `?auto_email=eq.true`, { status_email: 'Terkirim' }); 
+        }
         result = { success: true, message: "Status di-update." };
     }
-    else { result = { success: false, message: "Aksi tidak dikenali." }; }
+    else { 
+        result = { success: false, message: "Aksi tidak dikenali." }; 
+    }
   } catch (err) {
     console.error('SERVER ERROR:', err);
     result = { success: false, message: err.message };
