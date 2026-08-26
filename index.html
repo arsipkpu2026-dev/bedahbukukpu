@@ -334,7 +334,7 @@
 
     // DUA API URL:
     // PENTING: Ganti GAS_URL ini dengan URL terbaru setelah kamu Deploy Ulang di Apps Script!
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzNWbn9g0fY2exOteZUTzwvnJAObcyyZ2k_ENWZ1SQvSYCqv5bBuOGR0k6jsHkJYrDG/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbworwYcoobKlrcDS1SRah-uGJXxmABZcm_xdZZUclMtHB0AbLjV7hyv75f-cX_nH371/exec";
     const VERCEL_URL = "/api";
 
     const APP_CONFIG = {
@@ -644,26 +644,24 @@ async function cariEmailLupa() {
             return Swal.fire({icon: 'warning', title: 'Perhatian', text: 'Ketik nama Anda di kolom atas terlebih dahulu.', heightAuto: false});
         }
 
-        let inputHp = "";
+        let namaKegiatan = currentDownloadType === 1 ? "Bedah Buku I" : "Bedah Buku II";
+
+        // Tampilkan prompt input HP untuk kedua jenis acara
+        const { value: hpValue } = await Swal.fire({
+            title: 'Verifikasi Keamanan',
+            text: `Masukkan Nomor HP yang Anda daftarkan di ${namaKegiatan}:`,
+            input: 'tel',
+            inputPlaceholder: 'Misal: 08123456789',
+            showCancelButton: true,
+            confirmButtonText: 'Cari Email Saya',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) return 'Nomor HP tidak boleh kosong!'
+            }
+        });
         
-        // Meminta Input Nomor HP KHUSUS untuk Bedah Buku I
-        if (currentDownloadType === 1) {
-            const { value: hpValue } = await Swal.fire({
-                title: 'Verifikasi Keamanan',
-                text: 'Masukkan Nomor HP yang Anda daftarkan di Bedah Buku I:',
-                input: 'tel',
-                inputPlaceholder: 'Misal: 08123456789',
-                showCancelButton: true,
-                confirmButtonText: 'Cari Email Saya',
-                cancelButtonText: 'Batal',
-                inputValidator: (value) => {
-                    if (!value) return 'Nomor HP tidak boleh kosong!'
-                }
-            });
-            
-            if (!hpValue) return; // Dibatalkan pengguna
-            inputHp = hpValue;
-        }
+        if (!hpValue) return; // Dibatalkan pengguna
+        let inputHp = hpValue;
 
         showLoading('Mencari Data di Server...');
         
@@ -674,12 +672,10 @@ async function cariEmailLupa() {
             Swal.fire({
                 icon: 'success', 
                 title: 'Ditemukan!', 
-                html: `Sistem mendeteksi kecocokan data. Email asli Anda adalah:<br><br><b class="text-xl text-blue-700 tracking-wide bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 inline-block my-2">${res.email}</b><br><br><p class="text-xs text-slate-600 font-bold mt-2">Email tersebut telah disalin otomatis ke kolom pencarian di bawah.</p>`, 
+                html: `Sistem mendeteksi kecocokan data. Sebagai petunjuk, email Anda adalah:<br><br><b class="text-xl text-slate-800 tracking-widest bg-slate-100 px-4 py-2 rounded-lg border border-slate-300 inline-block my-2 font-mono">${res.email}</b><br><br><p class="text-[11px] text-red-600 font-extrabold mt-2 leading-tight">Demi keamanan data, sistem tidak memasukkan email ini secara otomatis. Silakan ketik kembali email asli Anda secara lengkap di kolom pencarian.</p>`, 
                 heightAuto: false
-            }).then(() => {
-                // Fitur ekstra: Langsung mengisi kolom email otomatis agar peserta tidak perlu mengetik ulang
-                document.getElementById('d-email').value = res.email;
             });
+            // Baris document.getElementById('d-email').value = res.email; DIHAPUS.
         } else {
             Swal.fire({icon: 'error', title: 'Gagal', text: res.message, heightAuto: false});
         }
