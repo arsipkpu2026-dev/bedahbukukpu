@@ -40,12 +40,12 @@ module.exports = async function handler(req, res) {
   try {
     if (action === 'hadirTeks') {
       const d = parsedBody.data;
-      await dbQuery('POST', 'kehadiran', '', { nama: d[0], instansi: d[1], email: d[2], hp: d[3], auto_email: d[4] });
+      await dbQuery('POST', 'kehadiran', '', { nama: d[0], instansi: d[1], email: d[2], hp: d[3], auto_email: d[4], nama_moderator: d[5] });
       result = { success: true, message: "Pendaftaran Berhasil!" };
     }
     else if (action === 'getData') {
       const data = await dbQuery('GET', 'kehadiran', '?select=*&order=id.asc');
-      result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat]) };
+      result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat, r.nama_moderator]) };
     }
     else if (action === 'simpanPdf') {
       // 📌 Mengunci upload HANYA ke bucket 'generate' sesuai instruksi
