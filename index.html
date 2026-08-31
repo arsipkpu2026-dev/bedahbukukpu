@@ -139,6 +139,7 @@
           <div><label class="block text-xs font-bold text-slate-600 mb-1">Instansi / Satker / Organisasi / Lainnya</label><input type="text" id="h-instansi" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
           <div><label class="block text-xs font-bold text-slate-600 mb-1">Email Aktif</label><input type="email" id="h-email" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
           <div><label class="block text-xs font-bold text-slate-600 mb-1">Nomor HP</label><input type="tel" pattern="[0-9]*" id="h-hp" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm" placeholder="Misal: 08123456789"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Siapa Nama Moderator / Penulis</label><input type="text" id="h-moderator" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
           <div class="mt-1 flex items-start gap-3 bg-orange-50 p-4 rounded-xl border border-orange-200">
              <input type="checkbox" id="h-auto-email" class="w-5 h-5 mt-0.5 text-orange-600 rounded">
              <label for="h-auto-email" class="text-xs text-slate-700 font-bold">Kirim ke email saya otomatis bila sertifikat tersedia.</label>
@@ -340,7 +341,7 @@
     const APP_CONFIG = {
       hadir: { mode: 'Timer', start: '2026-08-30T00:00:00+07:00', end: '2026-09-02T17:15:00+07:00', msg: 'Form daftar sudah ditutup.' },
       buku2: { mode: 'Tutup', msg: 'Sertifikat elektronik baru dapat diakses dan diunduh melalui sistem paling cepat H+3 setelah kegiatan selesai dilaksanakan.' },
-      bantuan: { wa: '6281263184787', email: 'arsipkpu2026@gmail.com' }
+      bantuan: { wa: '', email: 'arsipkpu2026@gmail.com' }
     };
 
     let savedTemplateConfig = ""; 
@@ -440,7 +441,7 @@
         let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         let emailLink = isMobile ? `mailto:${emailConfig}` : `https://mail.google.com/mail/?view=cm&fs=1&to=${emailConfig}`;
         
-        let waButtonHtml = waConfig ? `<a href="https://wa.me/${phone}" target="_blank" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-green-600 active:scale-95 text-center flex items-center justify-center gap-2">💬 Hubungi via WhatsApp</a>` : '';
+        let waButtonHtml = '';
         let emailButtonHtml = emailConfig ? `<a href="${emailLink}" target="_blank" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:bg-blue-600 active:scale-95 text-center flex items-center justify-center gap-2">📧 Hubungi via Email</a>` : '';
         
         Swal.fire({
@@ -623,7 +624,7 @@
       }
 
       showLoading('Mendaftarkan Kehadiran...');
-      const dataText = [ inputNama, document.getElementById('h-instansi').value, inputEmail, document.getElementById('h-hp').value, document.getElementById('h-auto-email').checked ];
+      const dataText = [ inputNama, document.getElementById('h-instansi').value, inputEmail, document.getElementById('h-hp').value, document.getElementById('h-auto-email').checked, document.getElementById('h-moderator').value ];
       const resTeks = await fetchAPI('hadirTeks', { data: dataText }, 'POST');
       
       if (resTeks.success) { 
@@ -1040,7 +1041,7 @@ async function cariEmailLupa() {
         
         let csvContent = "data:text/csv;charset=utf-8,";
         // Header
-        csvContent += "Waktu,Nama,Instansi,Email,No HP,Minta Email Otomatis,Status Email\n";
+        csvContent += "Waktu,Nama,Instansi,Email,No HP,Minta Email Otomatis,Status Email,Nomor Sertifikat,Nama Moderator / Penulis\n";
         
         dbPeserta.forEach(row => {
             // Kita replace koma di teks agar format CSV tidak rusak
