@@ -135,11 +135,11 @@
         <div id="info-waktu-hadir" class="mb-5 hidden text-xs lg:text-sm font-medium text-amber-800 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm leading-relaxed"></div>
         
         <form id="form-hadir" onsubmit="submitHadirTeks(event)" class="flex flex-col gap-4">
-          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap (Boleh Pakai Gelar)</label><input type="text" id="h-nama" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
-          <div><label class="block text-xs font-bold text-slate-600 mb-1">Instansi / Satker / Organisasi / Lainnya</label><input type="text" id="h-instansi" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
-          <div><label class="block text-xs font-bold text-slate-600 mb-1">Email Aktif</label><input type="email" id="h-email" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
-          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nomor HP</label><input type="tel" pattern="[0-9]*" id="h-hp" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm" placeholder="Misal: 08123456789"></div>
-          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nama Moderator / Penulis?</label><input type="text" id="h-moderator" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap (Boleh Pakai Gelar) <span class="text-red-500">*</span></label><input type="text" id="h-nama" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Instansi / Satker / Organisasi / Lainnya <span class="text-red-500">*</span></label><input type="text" id="h-instansi" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Email Aktif <span class="text-red-500">*</span></label><input type="email" id="h-email" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nomor HP <span class="text-red-500">*</span></label><input type="tel" pattern="[0-9]*" id="h-hp" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm" placeholder="Misal: 08123456789"></div>
+          <div><label class="block text-xs font-bold text-slate-600 mb-1">Nama Moderator / Penulis? <span class="text-red-500">*</span></label><input type="text" id="h-moderator" required class="w-full bg-white/80 border border-slate-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-orange-500 font-medium shadow-sm"></div>
           <div class="mt-1 flex items-start gap-3 bg-orange-50 p-4 rounded-xl border border-orange-200">
              <input type="checkbox" id="h-auto-email" class="w-5 h-5 mt-0.5 text-orange-600 rounded">
              <label for="h-auto-email" class="text-xs text-slate-700 font-bold">Kirim ke email saya otomatis bila sertifikat tersedia.</label>
@@ -339,7 +339,7 @@
     const VERCEL_URL = "/api";
 
     const APP_CONFIG = {
-      hadir: { mode: 'Timer', start: '2026-09-01T00:00:00+07:00', end: '2026-09-02T17:15:00+07:00', msg: 'Form daftar sudah ditutup.' },
+      hadir: { mode: 'Timer', start: '2026-09-01T12:00:00+07:00', end: '2026-09-02T15:00:00+07:00', msg: 'Form daftar sudah ditutup.' },
       buku2: { mode: 'Tutup', msg: 'Sertifikat elektronik dapat diunduh bila sudah tersedia.' },
       bantuan: { wa: '', email: 'arsipkpu2026@gmail.com' }
     };
