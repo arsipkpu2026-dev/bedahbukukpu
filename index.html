@@ -232,8 +232,8 @@
             <h3 class="text-base lg:text-xl font-extrabold text-slate-800 mb-4 border-b pb-2 flex justify-between items-center">
                2. Data Peserta
                <div class="flex gap-2">
-                   <!-- FITUR BARU: Tombol Export CSV -->
-                   <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 shadow-sm font-bold transition active:scale-95">📥 Ekspor CSV</button>
+                   <!-- FITUR BARU: Tombol Export Excel -->
+                   <button onclick="exportExcel()" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 shadow-sm font-bold transition active:scale-95">📥 Ekspor Excel</button>
                    <button onclick="loadDataPeserta()" class="text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm font-bold transition active:scale-95">🔄 Refresh</button>
                </div>
             </h3>
@@ -1034,25 +1034,28 @@ async function cariEmailLupa() {
     }
 
     // =========================================================
-    // FITUR BARU: EKSPOR CSV
+    // FITUR BARU: EKSPOR EXCEL (XLS)
     // =========================================================
-    function exportCSV() {
+    function exportExcel() {
         if(dbPeserta.length === 0) return Swal.fire('Kosong', 'Tidak ada data peserta untuk diekspor.', 'info');
         
-        let csvContent = "data:text/csv;charset=utf-8,";
-        // Header
-        csvContent += "Waktu,Nama,Instansi,Email,No HP,Minta Email Otomatis,Status Email,Nomor Sertifikat,Nama Moderator / Penulis\n";
+        // Membangun tabel HTML dengan Header
+        let tableHTML = "<table border='1'><thead><tr><th>Waktu</th><th>Nama</th><th>Instansi</th><th>Email</th><th>No HP</th><th>Minta Email Otomatis</th><th>Status Email</th><th>Nomor Sertifikat</th><th>Nama Moderator / Penulis</th></tr></thead><tbody>";
         
         dbPeserta.forEach(row => {
-            // Kita replace koma di teks agar format CSV tidak rusak
-            let rowFormat = row.map(item => `"${(item || '').toString().replace(/"/g, '""')}"`);
-            csvContent += rowFormat.join(",") + "\n";
+            let rowFormat = row.map(item => `<td>${(item || '').toString()}</td>`);
+            tableHTML += "<tr>" + rowFormat.join("") + "</tr>";
         });
         
-        let encodedUri = encodeURI(csvContent);
+        tableHTML += "</tbody></table>";
+        
+        // Template untuk Microsoft Excel
+        let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Data Peserta</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>${tableHTML}</body></html>`;
+        
+        let blob = new Blob([template], { type: 'application/vnd.ms-excel' });
         let link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "Data_Peserta_KPU_Labura.csv");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Data_Peserta_KPU_Labura.xls";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1137,7 +1140,9 @@ async function cariEmailLupa() {
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
             let fileName = `${nama}_${email}.pdf`;
-            let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 1) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); 
+            
+            // PERUBAHAN: Mulai nomor dari 244
+            let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 244) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); 
             let nomorSertifikat = "Nomor : " + rawNomor;
             
             document.querySelector('.swal2-title').innerHTML = `Memproses ${i+1}/${checks.length}<br><small>${nama}</small>`;
@@ -1209,7 +1214,10 @@ async function cariEmailLupa() {
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
             let fileName = `${nama}_${email}.pdf`;
-            let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 1) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); let nomorSertifikat = "Nomor : " + rawNomor;
+            
+            // PERUBAHAN: Mulai nomor dari 244
+            let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 244) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); 
+            let nomorSertifikat = "Nomor : " + rawNomor;
             
             document.querySelector('.swal2-title').innerHTML = `Memproses ${i+1}/${checks.length}<br><small>${nama}</small>`;
             
