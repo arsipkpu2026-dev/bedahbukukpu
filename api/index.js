@@ -51,9 +51,16 @@ module.exports = async function handler(req, res) {
       // 📌 Mengunci upload HANYA ke bucket 'generate' sesuai instruksi
       const bucketName = 'generate'; 
       const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
-      const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
+      
+      // PERUBAHAN: Encode URI pada nama file dan penambahan x-upsert
+      const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${encodeURIComponent(parsedBody.filename)}`, {
         method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/pdf' },
+        headers: { 
+            'apikey': SUPABASE_KEY, 
+            'Authorization': `Bearer ${SUPABASE_KEY}`, 
+            'Content-Type': 'application/pdf',
+            'x-upsert': 'true' // Mengizinkan Supabase menimpa (overwrite) file jika sudah ada
+        },
         body: buffer
       });
       if(!fileRes.ok) throw new Error(await fileRes.text());
