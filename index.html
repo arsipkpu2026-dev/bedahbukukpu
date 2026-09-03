@@ -94,7 +94,7 @@
             </div>
           </div>
 
-          <div id="menu-buku2-card" onclick="validasiAksesFormLokal('buku2')" title="Sertifikat elektronik kegiatan Bedah Buku II sedang dalam tahap pemrosesan..." class="group relative bg-gradient-to-br from-cyan-600 to-blue-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-cyan-500/50 relative">
+          <div id="menu-buku2-card" onclick="validasiAksesFormLokal('buku2')" title="Cari dan unduh sertifikat Bedah Buku II" class="group relative bg-gradient-to-br from-cyan-600 to-blue-700 text-white p-5 rounded-[1.5rem] shadow-xl hover:-translate-y-2 transition-all cursor-pointer overflow-hidden border border-cyan-500/50 relative">
             <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none group-hover:scale-110 transition-transform">📘</div>
             <div class="relative z-10 flex flex-col gap-3">
               <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner">📘</div>
@@ -335,12 +335,13 @@
 
     // DUA API URL:
     // PENTING: Ganti GAS_URL ini dengan URL terbaru setelah kamu Deploy Ulang di Apps Script!
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbworwYcoobKlrcDS1SRah-uGJXxmABZcm_xdZZUclMtHB0AbLjV7hyv75f-cX_nH371/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby7uCmtIq6qxmek7so6RTSj8Bc3Bsvb4mNGnJjPXi8ORvHbXea_heH-WSJGiEYbjYMZ/exec";
     const VERCEL_URL = "/api";
 
     const APP_CONFIG = {
       hadir: { mode: 'Timer', start: '2026-09-02T10:00:00+07:00', end: '2026-09-02T15:00:00+07:00', msg: 'Form daftar hadir sudah ditutup.' },
-      buku2: { mode: 'Tutup', msg: 'Sertifikat elektronik dapat diunduh bila sudah tersedia.' },
+      // MEMBUKA AKSES KE MENU BEDAH BUKU 2
+      buku2: { mode: 'Buka', msg: '' },
       bantuan: { wa: '', email: 'arsipkpu2026@gmail.com' }
     };
 
@@ -1133,7 +1134,6 @@ async function cariEmailLupa() {
 
       showLoading(`Memproses 0 dari ${checks.length}`);
       let successCount = 0;
-      let autoSendCount = 0;
       
       if (basePdfBytes) {
           const { PDFDocument, rgb } = PDFLib;
@@ -1197,14 +1197,7 @@ async function cariEmailLupa() {
                 
                 if(res.success) {
                     successCount++;
-                    // FITUR BARU: AUTO SEND BILA PESERTA MINTA
-                    if(autoEmail === "Ya") {
-                        const sendRes = await fetchAPI('kirimEmailGAS', { selectedEmails: [email], jenis: currentDownloadType }, 'POST', 0);
-                        if(sendRes.success && sendRes.message.includes('Berhasil')) {
-                            await fetchAPI('kirimEmailTTE', { selectedEmails: [email] }, 'POST', 0);
-                            autoSendCount++;
-                        }
-                    }
+                    // AUTO SEND EMAIL DINONAKTIFKAN DI SINI
                 }
             } catch (err) {}
           }
@@ -1258,19 +1251,12 @@ async function cariEmailLupa() {
                 const res = await fetchAPI('simpanPdf', { base64Data: pdf.output('datauristring'), filename: fileName, jenis: currentDownloadType }, 'POST', 0); 
                 if(res.success) {
                     successCount++;
-                    // FITUR BARU: AUTO SEND BILA PESERTA MINTA
-                    if(autoEmail === "Ya") {
-                        const sendRes = await fetchAPI('kirimEmailGAS', { selectedEmails: [email], jenis: currentDownloadType }, 'POST', 0);
-                        if(sendRes.success && sendRes.message.includes('Berhasil')) {
-                            await fetchAPI('kirimEmailTTE', { selectedEmails: [email] }, 'POST', 0);
-                            autoSendCount++;
-                        }
-                    }
+                    // AUTO SEND EMAIL DINONAKTIFKAN DI SINI
                 } 
             } catch (err) {}
           }
       }
-      Swal.fire({ title: 'Selesai!', text: `Berhasil membuat ${successCount} PDF. (Terkirim Otomatis: ${autoSendCount})`, icon: 'success', heightAuto: false }).then(() => loadDataPeserta());
+      Swal.fire({ title: 'Selesai!', text: `Berhasil membuat ${successCount} PDF tanpa mengirim email otomatis.`, icon: 'success', heightAuto: false }).then(() => loadDataPeserta());
     }
 
     // =========================================================
@@ -1331,8 +1317,8 @@ async function cariEmailLupa() {
                          <small class="text-slate-400">Sedang memproses: ${targetEmail}</small>`
               });
 
-              // Kirim ke GAS
-              const resGAS = await fetchAPI('kirimEmailGAS', { selectedEmails: [targetEmail], jenis: currentDownloadType }, 'POST', 0); 
+              // Kirim ke GAS dengan JENIS 2 (TERKUNCI KE FOLDER BEDAH BUKU II)
+              const resGAS = await fetchAPI('kirimEmailGAS', { selectedEmails: [targetEmail], jenis: 2 }, 'POST', 0); 
               
               if (resGAS.success && resGAS.message.includes('Berhasil')) {
                   successCount++;
