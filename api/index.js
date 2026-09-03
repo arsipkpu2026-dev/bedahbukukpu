@@ -22,7 +22,7 @@ function hashSHA256(input) {
   return crypto.createHash('sha256').update(input).digest('hex');
 }
 
-moduleexports = async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Sistem Keamanan & Izin (CORS)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
