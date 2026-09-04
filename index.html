@@ -1134,12 +1134,16 @@ async function cariEmailLupa() {
 
       showLoading(`Memproses 0 dari ${checks.length}`);
       let successCount = 0;
+      let failedPdfs = []; // MENCATAT YANG GAGAL
       
       if (basePdfBytes) {
           const { PDFDocument, rgb } = PDFLib;
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
-            let fileName = `${nama}_${email}.pdf`;
+            
+            // PERUBAHAN: Bersihkan nama dari karakter aneh
+            let safeNama = nama.replace(/[^a-zA-Z0-9\s.]/g, '').trim();
+            let fileName = `${safeNama}_${email}.pdf`;
             
             // PERUBAHAN: Mulai nomor dari 244
             let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 244) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); 
@@ -1195,18 +1199,24 @@ async function cariEmailLupa() {
                 const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
                 const res = await fetchAPI('simpanPdf', { base64Data: pdfBytes, filename: fileName, jenis: currentDownloadType }, 'POST', 0);
                 
-                if(res.success) {
+                if (res.success) {
                     successCount++;
-                    // AUTO SEND EMAIL DINONAKTIFKAN DI SINI
+                } else {
+                    failedPdfs.push(nama + " (Error: " + res.message + ")");
                 }
-            } catch (err) {}
+            } catch (err) {
+                failedPdfs.push(nama + " (Error Lokal: " + err.message + ")");
+            }
           }
       } 
       else if (templateImg.src) {
           const orientation = canvas.width > canvas.height ? 'l' : 'p';
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
-            let fileName = `${nama}_${email}.pdf`;
+            
+            // PERUBAHAN: Bersihkan nama dari karakter aneh
+            let safeNama = nama.replace(/[^a-zA-Z0-9\s.]/g, '').trim();
+            let fileName = `${safeNama}_${email}.pdf`;
             
             // PERUBAHAN: Mulai nomor dari 244
             let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 244) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); 
@@ -1249,14 +1259,26 @@ async function cariEmailLupa() {
             
             try { 
                 const res = await fetchAPI('simpanPdf', { base64Data: pdf.output('datauristring'), filename: fileName, jenis: currentDownloadType }, 'POST', 0); 
-                if(res.success) {
+                if (res.success) {
                     successCount++;
-                    // AUTO SEND EMAIL DINONAKTIFKAN DI SINI
-                } 
-            } catch (err) {}
+                } else {
+                    failedPdfs.push(nama + " (Error: " + res.message + ")");
+                }
+            } catch (err) {
+                failedPdfs.push(nama + " (Error Lokal: " + err.message + ")");
+            }
           }
       }
-      Swal.fire({ title: 'Selesai!', text: `Berhasil membuat ${successCount} PDF tanpa mengirim email otomatis.`, icon: 'success', heightAuto: false }).then(() => loadDataPeserta());
+      
+      if (failedPdfs.length > 0) {
+          Swal.fire({
+              title: 'Proses Selesai (Ada Error)',
+              html: `Berhasil: ${successCount} PDF<br>Gagal: ${failedPdfs.length} PDF<br><br><div class="bg-red-50 p-2 text-xs text-left h-32 overflow-auto border text-red-600">${failedPdfs.join('<br>')}</div>`,
+              icon: 'warning'
+          }).then(() => loadDataPeserta());
+      } else {
+          Swal.fire({ title: 'Selesai!', text: `Berhasil membuat ${successCount} PDF tanpa mengirim email otomatis.`, icon: 'success', heightAuto: false }).then(() => loadDataPeserta());
+      }
     }
 
     // =========================================================
