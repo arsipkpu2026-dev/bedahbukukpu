@@ -48,21 +48,21 @@ module.exports = async function handler(req, res) {
       result = { data: data.map(r => [r.created_at, r.nama, r.instansi, r.email, r.hp, r.auto_email ? "Ya" : "Tidak", r.status_email, r.nomor_sertifikat, r.nama_moderator]) };
     }
     else if (action === 'simpanPdf') {
-      // 📌 Mengunci upload HANYA ke bucket 'generate' sesuai instruksi
       const bucketName = 'generate'; 
       const buffer = Buffer.from(parsedBody.base64Data.split(',')[1], 'base64');
       
-      // PERUBAHAN: Encode URI pada nama file dan penambahan x-upsert
-      const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${encodeURIComponent(parsedBody.filename)}`, {
+      // PERUBAHAN: Menghapus encodeURIComponent agar Supabase tidak membaca %20 yang menyebabkan Invalid Key
+      const fileRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${parsedBody.filename}`, {
         method: 'POST',
         headers: { 
             'apikey': SUPABASE_KEY, 
             'Authorization': `Bearer ${SUPABASE_KEY}`, 
             'Content-Type': 'application/pdf',
-            'x-upsert': 'true' // Mengizinkan Supabase menimpa (overwrite) file jika sudah ada
+            'x-upsert': 'true'
         },
         body: buffer
       });
+      
       if(!fileRes.ok) throw new Error(await fileRes.text());
       result = { success: true };
     }
