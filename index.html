@@ -1141,8 +1141,8 @@ async function cariEmailLupa() {
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
             
-            // PERUBAHAN: Bersihkan nama dari karakter aneh
-            let safeNama = nama.replace(/[^a-zA-Z0-9\s.]/g, '').trim();
+            // PERUBAHAN PENTING: Mencegah nama memiliki garis miring agar Supabase tidak menolaknya
+            let safeNama = nama.replace(/[\/\\]/g, '-').trim();
             let fileName = `${safeNama}_${email}.pdf`;
             
             // PERUBAHAN: Mulai nomor dari 244
@@ -1214,8 +1214,8 @@ async function cariEmailLupa() {
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
             
-            // PERUBAHAN: Bersihkan nama dari karakter aneh
-            let safeNama = nama.replace(/[^a-zA-Z0-9\s.]/g, '').trim();
+            // PERUBAHAN PENTING: Mencegah nama memiliki garis miring agar Supabase tidak menolaknya
+            let safeNama = nama.replace(/[\/\\]/g, '-').trim();
             let fileName = `${safeNama}_${email}.pdf`;
             
             // PERUBAHAN: Mulai nomor dari 244
