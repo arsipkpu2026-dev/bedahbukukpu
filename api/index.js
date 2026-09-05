@@ -125,6 +125,14 @@ module.exports = async function handler(req, res) {
         }
         result = { success: true, message: "Status di-update." };
     }
+      // --- PASTE KODENYA DI SINI ---
+    else if (action === 'logKunjungan') {
+        // Menangkap info jenis HP/Browser pengunjung
+        const userAgent = req.headers['user-agent'] || 'Tidak diketahui';
+        await dbQuery('POST', 'log_kunjungan', '', { perangkat: userAgent });
+        result = { success: true, message: "Log dicatat" };
+    }
+    //
     else { 
         result = { success: false, message: "Aksi tidak dikenali." }; 
     }
