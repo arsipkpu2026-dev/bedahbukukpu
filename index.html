@@ -373,7 +373,12 @@
         const divBuku2 = document.getElementById('menu-buku2-card');
         if(!stBuku2.isOpen) tempelWatermark(divBuku2); else hapusWatermark(divBuku2);
     }
-    window.addEventListener('DOMContentLoaded', (event) => { refreshLokalUI(); });
+    window.addEventListener('DOMContentLoaded', (event) => { 
+        refreshLokalUI(); 
+        
+        // Sinyal log kunjungan tanpa mengganggu loading web
+        fetchAPI('logKunjungan', {}, 'POST', 0).catch(err => console.log(""));
+    });
     
     function toggleKodeInput() { 
         document.getElementById('kode-container').style.display = document.getElementById('s-tipe-nomor').value === 'otomatis' ? 'block' : 'none'; 
