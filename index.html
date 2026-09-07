@@ -232,7 +232,6 @@
             <h3 class="text-base lg:text-xl font-extrabold text-slate-800 mb-4 border-b pb-2 flex justify-between items-center">
                2. Data Peserta
                <div class="flex gap-2">
-                   <!-- FITUR BARU: Tombol Export Excel -->
                    <button onclick="exportExcel()" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 shadow-sm font-bold transition active:scale-95">📥 Ekspor Excel</button>
                    <button onclick="loadDataPeserta()" class="text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm font-bold transition active:scale-95">🔄 Refresh</button>
                </div>
@@ -333,14 +332,11 @@
   
   <script>
 
-    // DUA API URL:
-    // PENTING: Ganti GAS_URL ini dengan URL terbaru setelah kamu Deploy Ulang di Apps Script!
-    const GAS_URL = "https://script.google.com/macros/s/AKfycby609ubY9rwlLeztlhOdifWhwcRQD2HWtzvDq9g1Y_l1rJHc3gcgynRzsO8Nmu3t0xI/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzxagvT7JtwD6IMAwPFlj4cHm2jOzUjDklUJ4LQUwmUmREaFL-1Qp8-jBYV4q1NcdWI/exec";
     const VERCEL_URL = "/api";
 
     const APP_CONFIG = {
       hadir: { mode: 'Timer', start: '2026-09-02T10:00:00+07:00', end: '2026-09-02T15:00:00+07:00', msg: 'Form daftar hadir sudah ditutup.' },
-      // MEMBUKA AKSES KE MENU BEDAH BUKU 2
       buku2: { mode: 'Buka', msg: 'Sertifikat Bedah Buku II dapat diunduh bila sudah tersedia.' },
       bantuan: { wa: '', email: 'arsipkpu2026@gmail.com' }
     };
@@ -373,10 +369,9 @@
         const divBuku2 = document.getElementById('menu-buku2-card');
         if(!stBuku2.isOpen) tempelWatermark(divBuku2); else hapusWatermark(divBuku2);
     }
+    
     window.addEventListener('DOMContentLoaded', (event) => { 
         refreshLokalUI(); 
-        
-        // Sinyal log kunjungan tanpa mengganggu loading web
         fetchAPI('logKunjungan', {}, 'POST', 0).catch(err => console.log(""));
     });
     
@@ -412,8 +407,8 @@
                 }
                 
                 if(APP_CONFIG.hadir.start || APP_CONFIG.hadir.end) {
-                    let strMulai = APP_CONFIG.hadir.start ? new Date(APP_CONFIG.hadir.start).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Kapan saja';
-                    let strSelesai = APP_CONFIG.hadir.end ? new Date(APP_CONFIG.hadir.end).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Tidak Terbatas';
+                    let strMulai = APP_CONFIG.hadir.start ? new Date(APP_CONFIG.hadir.start).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'short' }) : 'Kapan saja';
+                    let strSelesai = APP_CONFIG.hadir.end ? new Date(APP_CONFIG.hadir.end).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'short' }) : 'Tidak Terbatas';
                     infoDiv.style.display = 'block'; 
                     infoDiv.innerHTML = stempelHTML + `📌 <b>Jadwal Pendaftaran:</b><br>Dibuka: <b>${strMulai}</b><br>Ditutup: <b>${strSelesai}</b>`;
                 } else { 
@@ -469,9 +464,6 @@
         return /^https?:\/\//i.test(url.trim()) ? url.trim() : 'https://' + url.trim(); 
     }
 
-    // =========================================================
-    // MODIFIKASI ROUTER: Request GAS untuk Email dan Pencarian
-    // =========================================================
     async function fetchAPI(action, params = {}, method = 'GET', retries = 2) {
       const isGAS = (action === 'download' || action === 'cariEmail' || action === 'kirimEmailGAS');
       let url = isGAS ? GAS_URL : VERCEL_URL;
@@ -522,9 +514,6 @@
         navTo('download');
     }
 
-    // =========================================================
-    // AGENDA & E-BOOK
-    // =========================================================
     async function navToAgenda() {
       navTo('agenda'); 
       document.getElementById('list-agenda-user').innerHTML = '<p class="text-center text-sm py-4 col-span-2">Memuat...</p>';
@@ -537,9 +526,9 @@
       let html = '';
       res.data.forEach(row => {
         const waktuStart = new Date(row[2]); 
-        const strStart = waktuStart.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+        const strStart = waktuStart.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'short' });
         const waktuEnd = row[8] ? new Date(row[8]) : new Date(waktuStart.getTime() + (3 * 60 * 60 * 1000)); 
-        const strEnd = waktuEnd.toLocaleTimeString('id-ID', { timeStyle: 'short' });
+        const strEnd = waktuEnd.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', timeStyle: 'short' });
         const now = new Date().getTime(); 
         const startMs = waktuStart.getTime(); 
         const endMs = waktuEnd.getTime();
@@ -596,12 +585,7 @@
     function copyTxt(text) { 
         navigator.clipboard.writeText(text).then(() => Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Tersalin!', heightAuto: false })); 
     }
-    
-    // =========================================================
-    // KEHADIRAN & DOWNLOAD
-    // =========================================================
-    
-    // FITUR BARU: Deteksi Typo Email
+
     function cekTypoEmail(email) {
        const commonTypos = ['gmai.com', 'gmail.co', 'yaho.com', 'yahoo.co', 'outlok.com', 'gmal.com', 'gmail.con'];
        let domain = email.split('@')[1];
@@ -616,7 +600,6 @@
       const inputNama = document.getElementById('h-nama').value.trim(); 
       const inputEmail = document.getElementById('h-email').value.toLowerCase().trim();
       
-      // Pengecekan Typo
       if (cekTypoEmail(inputEmail)) {
           const konfirmasi = await Swal.fire({
               title: 'Email Terlihat Aneh',
@@ -634,7 +617,7 @@
       const resTeks = await fetchAPI('hadirTeks', { data: dataText }, 'POST');
       
       if (resTeks.success) { 
-          const waktuSekarang = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }); 
+          const waktuSekarang = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'short' }); 
           localStorage.setItem('kpu_labura_hadir_v1', `${inputNama} | ${inputEmail} (${waktuSekarang} WIB)`); 
           document.getElementById('form-hadir').reset(); 
           navTo('home'); 
@@ -644,7 +627,7 @@
       }
     }
     
-async function cariEmailLupa() {
+    async function cariEmailLupa() {
         const inputNama = document.getElementById('d-nama').value.trim();
         
         if(!inputNama || inputNama.length < 3) {
@@ -653,7 +636,6 @@ async function cariEmailLupa() {
 
         let namaKegiatan = currentDownloadType === 1 ? "Bedah Buku I" : "Bedah Buku II";
 
-        // Tampilkan prompt input HP untuk kedua jenis acara
         const { value: hpValue } = await Swal.fire({
             title: 'Verifikasi Keamanan',
             text: `Masukkan Nomor HP yang Anda daftarkan di ${namaKegiatan}:`,
@@ -667,12 +649,11 @@ async function cariEmailLupa() {
             }
         });
         
-        if (!hpValue) return; // Dibatalkan pengguna
+        if (!hpValue) return; 
         let inputHp = hpValue;
 
         showLoading('Mencari Data di Server...');
         
-        // Menembak data Nama dan HP ke Google Apps Script
         const res = await fetchAPI('cariEmail', { nama: inputNama, hp: inputHp, jenis: currentDownloadType }, 'GET');
         
         if(res.success) {
@@ -682,7 +663,6 @@ async function cariEmailLupa() {
                 html: `Sistem mendeteksi kecocokan data. Sebagai petunjuk, email Anda adalah:<br><br><b class="text-xl text-slate-800 tracking-widest bg-slate-100 px-4 py-2 rounded-lg border border-slate-300 inline-block my-2 font-mono">${res.email}</b><br><br><p class="text-[11px] text-red-600 font-extrabold mt-2 leading-tight">Demi keamanan data, sistem tidak memasukkan email ini secara otomatis. Silakan ketik kembali email asli Anda secara lengkap di kolom pencarian.</p>`, 
                 heightAuto: false
             });
-            // Baris document.getElementById('d-email').value = res.email; DIHAPUS.
         } else {
             Swal.fire({icon: 'error', title: 'Gagal', text: res.message, heightAuto: false});
         }
@@ -700,9 +680,6 @@ async function cariEmailLupa() {
       }
     }
 
-    // =========================================================
-    // ADMIN & AUTHENTICATION
-    // =========================================================
     async function submitLogin(e) { 
         e.preventDefault(); 
         showLoading('Verifikasi...'); 
@@ -777,7 +754,6 @@ async function cariEmailLupa() {
         else Swal.fire({title:'Gagal', text:res.message, icon:'error', heightAuto:false}); 
     }
     
-    // CRUD Agenda & EBook Admin
     async function loadAgendaAdmin() { 
         document.getElementById('table-agenda-admin').innerHTML = '<tr><td colspan="3" class="p-2 text-center">Memuat...</td></tr>'; 
         const res = await fetchAPI('getAgenda'); 
@@ -785,7 +761,7 @@ async function cariEmailLupa() {
         
         let html = ''; 
         res.data.forEach(row => {
-            html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2">${new Date(row[2]).toLocaleString()}</td><td class="p-2"><button onclick="delAgenda('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`;
+            html += `<tr><td class="p-2 font-bold">${row[1]}</td><td class="p-2">${new Date(row[2]).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'short' })}</td><td class="p-2"><button onclick="delAgenda('${row[0]}')" class="text-red-500 font-bold">Hapus</button></td></tr>`;
         }); 
         document.getElementById('table-agenda-admin').innerHTML = html; 
     }
@@ -835,9 +811,6 @@ async function cariEmailLupa() {
         Swal.close(); 
     }
 
-    // =========================================================
-    // CANVAS SETTINGS
-    // =========================================================
     const canvas = document.getElementById('cert-canvas'); 
     const ctx = canvas.getContext('2d');
     let basePdfBytes = null; 
@@ -1039,13 +1012,9 @@ async function cariEmailLupa() {
       previewCanvas();
     }
 
-    // =========================================================
-    // FITUR BARU: EKSPOR EXCEL (XLS)
-    // =========================================================
     function exportExcel() {
         if(dbPeserta.length === 0) return Swal.fire('Kosong', 'Tidak ada data peserta untuk diekspor.', 'info');
         
-        // Membangun tabel HTML dengan Header
         let tableHTML = "<table border='1'><thead><tr><th>Waktu</th><th>Nama</th><th>Instansi</th><th>Email</th><th>No HP</th><th>Minta Email Otomatis</th><th>Status Email</th><th>Nomor Sertifikat</th><th>Nama Moderator / Penulis</th></tr></thead><tbody>";
         
         dbPeserta.forEach(row => {
@@ -1055,7 +1024,6 @@ async function cariEmailLupa() {
         
         tableHTML += "</tbody></table>";
         
-        // Template untuk Microsoft Excel
         let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Data Peserta</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>${tableHTML}</body></html>`;
         
         let blob = new Blob([template], { type: 'application/vnd.ms-excel' });
@@ -1067,9 +1035,6 @@ async function cariEmailLupa() {
         document.body.removeChild(link);
     }
 
-    // =========================================================
-    // DATA PESERTA & GENERATE PDF
-    // =========================================================
     async function loadDataPeserta() {
       document.getElementById('table-peserta').innerHTML = '<tr><td colspan="3" class="p-6 text-center text-slate-400 font-medium">Memuat...</td></tr>';
       try {
@@ -1139,18 +1104,16 @@ async function cariEmailLupa() {
 
       showLoading(`Memproses 0 dari ${checks.length}`);
       let successCount = 0;
-      let failedPdfs = []; // MENCATAT YANG GAGAL
+      let failedPdfs = []; 
       
       if (basePdfBytes) {
           const { PDFDocument, rgb } = PDFLib;
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
             
-            // PERUBAHAN PENTING: Mencegah nama memiliki garis miring agar Supabase tidak menolaknya
             let safeNama = nama.replace(/[\/\\]/g, '-').trim();
             let fileName = `${safeNama}_${email}.pdf`;
             
-            // PERUBAHAN: Mulai nomor dari 244
             let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 244) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); 
             let nomorSertifikat = "Nomor : " + rawNomor;
             
@@ -1169,7 +1132,6 @@ async function cariEmailLupa() {
                 const { width, height } = firstPage.getSize(); 
                 const scaleX = width / canvas.width, scaleY = height / canvas.height;
                 
-                // Draw Nama
                 let isNamaBold = els.nama.weight !== 'normal'; let fNama = undefined;
                 if(els.nama.font === 'Arial') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); 
                 else if(els.nama.font === 'Times') fNama = await pdfDoc.embedFont(isNamaBold ? PDFLib.StandardFonts.TimesRomanBold : PDFLib.StandardFonts.TimesRoman); 
@@ -1185,7 +1147,6 @@ async function cariEmailLupa() {
                 let yOffsetNama = (els.nama.size * scaleY) * 0.35; 
                 firstPage.drawText(nama, { x: nx, y: height - ((els.nama.y + (els.nama.h/2)) * scaleY) - yOffsetNama, size: els.nama.size * scaleY, font: fNama, color: rgb(0, 0, 0) }); 
 
-                // Draw Nomor
                 let isNomorBold = els.nomor.weight !== 'normal'; let fNomor = undefined;
                 if(els.nomor.font === 'Arial') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.HelveticaBold : PDFLib.StandardFonts.Helvetica); 
                 else if(els.nomor.font === 'Times') fNomor = await pdfDoc.embedFont(isNomorBold ? PDFLib.StandardFonts.TimesRomanBold : PDFLib.StandardFonts.TimesRoman); 
@@ -1219,11 +1180,9 @@ async function cariEmailLupa() {
           for (let i = 0; i < checks.length; i++) {
             let pIndex = checks[i].value, nama = dbPeserta[pIndex][1], email = dbPeserta[pIndex][3], autoEmail = dbPeserta[pIndex][5];
             
-            // PERUBAHAN PENTING: Mencegah nama memiliki garis miring agar Supabase tidak menolaknya
             let safeNama = nama.replace(/[\/\\]/g, '-').trim();
             let fileName = `${safeNama}_${email}.pdf`;
             
-            // PERUBAHAN: Mulai nomor dari 244
             let rawNomor = modeNomor === 'otomatis' ? (parseInt(pIndex) + 244) + kodeFormat : (dbPeserta[pIndex][7] || "TIDAK-ADA-NOMOR"); 
             let nomorSertifikat = "Nomor : " + rawNomor;
             
@@ -1286,9 +1245,6 @@ async function cariEmailLupa() {
       }
     }
 
-    // =========================================================
-    // FITUR BARU: PROGRESS BAR & LAPORAN ERROR SPESIFIK
-    // =========================================================
     async function triggerKirimEmail() {
       const checks = document.querySelectorAll('.chk-peserta:checked');
       let confirmText = ''; 
@@ -1334,7 +1290,6 @@ async function cariEmailLupa() {
               didOpen: () => { Swal.showLoading(); }
           });
 
-          // LOOPING PENGIRIMAN SATU PER SATU (MENCEGAH HANG & MELACAK ERROR)
           for(let i = 0; i < emailsToTarget.length; i++) {
               let targetEmail = emailsToTarget[i];
               
@@ -1344,12 +1299,10 @@ async function cariEmailLupa() {
                          <small class="text-slate-400">Sedang memproses: ${targetEmail}</small>`
               });
 
-              // Kirim ke GAS dengan JENIS 2 (TERKUNCI KE FOLDER BEDAH BUKU II)
               const resGAS = await fetchAPI('kirimEmailGAS', { selectedEmails: [targetEmail], jenis: 2 }, 'POST', 0); 
               
               if (resGAS.success && resGAS.message.includes('Berhasil')) {
                   successCount++;
-                  // Update Status Vercel DB
                   await fetchAPI('kirimEmailTTE', { selectedEmails: [targetEmail] }, 'POST', 0);
               } else {
                   failCount++;
