@@ -126,10 +126,20 @@ module.exports = async function handler(req, res) {
         result = { success: true, message: "Status di-update." };
     }
       // --- PASTE KODENYA DI SINI ---
-    else if (action === 'logKunjungan') {
-        // Menangkap info jenis HP/Browser pengunjung
+else if (action === 'logKunjungan') {
         const userAgent = req.headers['user-agent'] || 'Tidak diketahui';
-        await dbQuery('POST', 'log_kunjungan', '', { perangkat: userAgent });
+        
+        // 1. Ambil waktu saat ini, lalu tambahkan 7 jam (untuk GMT+7 / WIB)
+        let wibTime = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
+        
+        // 2. Format waktunya agar Supabase menyimpan angka pastinya tanpa menguranginya lagi
+        let formattedWIB = wibTime.toISOString().replace('Z', ''); 
+        
+        await dbQuery('POST', 'log_kunjungan', '', { 
+            perangkat: userAgent,
+            created_at: formattedWIB // Memaksa Supabase mencatat jam WIB
+        });
+        
         result = { success: true, message: "Log dicatat" };
     }
     //
