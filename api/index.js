@@ -128,19 +128,19 @@ module.exports = async function handler(req, res) {
       // --- PASTE KODENYA DI SINI ---
 else if (action === 'logKunjungan') {
         const userAgent = req.headers['user-agent'] || 'Tidak diketahui';
-        
-        // 1. Ambil waktu saat ini, lalu tambahkan 7 jam (untuk GMT+7 / WIB)
-        let wibTime = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
-        
-        // 2. Format waktunya agar Supabase menyimpan angka pastinya tanpa menguranginya lagi
-        let formattedWIB = wibTime.toISOString().replace('Z', ''); 
-        
+        const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'Tidak diketahui';
+        const city = req.headers['x-vercel-ip-city'] || 'Kota tidak terdeteksi';
+        const country = req.headers['x-vercel-ip-country'] || '';
+        const lokasi = `${city} ${country}`.trim();
+
+        // Langsung simpan, biarkan Supabase yang mengurus waktunya
         await dbQuery('POST', 'log_kunjungan', '', { 
             perangkat: userAgent,
-            created_at: formattedWIB // Memaksa Supabase mencatat jam WIB
+            ip_address: ip,
+            lokasi: lokasi
         });
         
-        result = { success: true, message: "Log dicatat" };
+        result = { success: true, message: "Log spesifik dicatat" };
     }
     //
     else { 
